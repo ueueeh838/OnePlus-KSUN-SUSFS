@@ -1,4 +1,4 @@
-name: Build Kernel Next(Patch SUSFS) For OnePlus12
+name: KernelSU Next(VFS) OnePlus 12
 on:
   workflow_dispatch:
     inputs:
