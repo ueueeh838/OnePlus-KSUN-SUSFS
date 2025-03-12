@@ -65,6 +65,7 @@ jobs:
          sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
+         sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
          
       - name: Set up KernelSU Next
         run: |
@@ -97,8 +98,8 @@ jobs:
            patch -p1 -F 3 < syscall_hooks.patch
            cp ../../kernel_patches/69_hide_stuff.patch ./
            patch -p1 -F 3 < 69_hide_stuff.patch
-           patch -p1 < 001-lz4.patch
-           patch -p1 < 002-zstd.patch
+           patch -p1 < 001-lz4.patch || true
+           patch -p1 < 002-zstd.patch || true
            
       - name: Apply new hook and add configuration
         run: |
@@ -123,6 +124,16 @@ jobs:
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
             sed -i '2s/check_defconfig//' ./common/build.config.gki
 
+      - name: 可能是去除dirty
+        run: |
+          mkdir kernel_workspace && cd kernel_workspace
+          sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
+          sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
+          sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
+          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
+          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
+          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
+        
       - name: Build kernel
         run: |
          cd kernel_workspace
