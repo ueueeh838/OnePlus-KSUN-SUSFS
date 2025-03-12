@@ -127,7 +127,7 @@ jobs:
       - name: Build kernel
         run: |
          cd kernel_workspace
-         LTO=thin ./kernel_platform/build_with_bazel.py -t ${{ github.event.inputs.CPUD }} gki -o out || true
+         LTO=thin ./kernel_platform/build_with_bazel.py -t ${{ github.event.inputs.CPUD }} gki
          
       - name: Make AnyKernel3
         run: |
