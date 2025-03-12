@@ -126,7 +126,7 @@ jobs:
 
       - name: 可能是去除dirty
         run: |
-          mkdir kernel_workspace && cd kernel_workspace
+          cd kernel_workspace
           sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
           sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
           sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
