@@ -83,9 +83,9 @@ jobs:
            cd kernel_platform
            cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
            cp ../kernel_patches/next/0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch ./KernelSU-Next/
-           cp ../kernel_patches/next/next_hooks.patch ./common/
-           cp ../kernel_patches/lz4/lz4.patch ./common/
-           cp ../kernel_patches/lz4/zstd.patch ./common/
+           cp ../kernel_patches/next/syscall_hooks.patch ./common/
+           cp ../kernel_patches/lz4/001-lz4.patch ./common/
+           cp ../kernel_patches/lz4/002-zstd.patch ./common/
            cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
            cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 
@@ -94,11 +94,11 @@ jobs:
            patch -p1 < 0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch || true
            cd ../common
            patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
+           patch -p1 -F 3 < syscall_hooks.patch
            cp ../../kernel_patches/69_hide_stuff.patch ./
            patch -p1 -F 3 < 69_hide_stuff.patch
-           patch -p1 -F 3 < next_hooks.patch || true
-           patch -p1 < lz4.patch
-           patch -p1 < zstd.patch
+           patch -p1 < 001-lz4.patch
+           patch -p1 < 002-zstd.patch
            
       - name: Apply new hook and add configuration
         run: |
