@@ -124,7 +124,7 @@ jobs:
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
             sed -i '2s/check_defconfig//' ./common/build.config.gki
             
-      - name: send commit
+      - name: -dirty
         run: |
          cd kernel_workspace
          sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
@@ -133,7 +133,9 @@ jobs:
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
-         cd
+
+      - name: send commit
+        run: |
          cd kernel_workspace/kernel_platform
          git add -A
          git commit -m "try remove -dirty"
