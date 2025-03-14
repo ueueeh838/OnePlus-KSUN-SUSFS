@@ -85,7 +85,7 @@ jobs:
            git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
            git clone https://github.com/Xiaomichael/kernel_patches.git
            cd kernel_platform
-           cp ../kernel_patches/next/next_hooks.patch ./common/
+           cp ../kernel_patches/next/syscall_hooks.patch ./common/
            cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
            cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
            cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
@@ -99,7 +99,7 @@ jobs:
            patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
            cp ../../kernel_patches/69_hide_stuff.patch ./
            patch -p1 -F 3 < 69_hide_stuff.patch
-           patch -p1 -F 3 < next_hooks.patch || true
+           patch -p1 -F 3 < syscall_hooks.patch
 
       - name: Apply new hook and add configuration
         run: |
