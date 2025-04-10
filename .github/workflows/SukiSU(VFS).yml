@@ -91,18 +91,22 @@ jobs:
           # Copy SUSFS patches
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
           cp ../kernel_patches/next/syscall_hooks.patch ./common/
-          # cp ../kernel_patches/lz4/001-lz4.patch ./common/
-          # cp ../kernel_patches/lz4/002-zstd.patch ./common/
+          cp ../kernel_patches/lz4/001-lz4.patch ./common/
+          cp ../kernel_patches/lz4/002-zstd.patch ./common/
           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
           
-          cd ../common
-          # patch -p1 < 001-lz4.patch || true
-          # patch -p1 < 002-zstd.patch || true
+          cd ./common
+          echo "lz"
+          patch -p1 < 001-lz4.patch || true
+          patch -p1 < 002-zstd.patch || true
+          echo "50"
           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
           cp ../../kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
+          echo "69"
           patch -p1 -F 3 < syscall_hooks.patch
+          echo "new"
 
       - name: Apply new hook and add configuration
         run: |
