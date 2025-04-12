@@ -1,4 +1,4 @@
-# OnePlus-KSUN-MKSU-SUSFS
+# OnePlus-KSUN-SukiSU-SUSFS
 一加内核开源地址：[OnePlusOSS](https://github.com/OnePlusOSS/kernel_manifest)
 
 # 使用说明:
