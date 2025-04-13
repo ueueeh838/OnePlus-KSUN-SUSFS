@@ -85,9 +85,6 @@ jobs:
         run: |
           cd kernel_workspace
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
-          cd susfs4ksu
-          git reset --hard HEAD~1
-          cd ..
           git clone https://github.com/Xiaomichael/kernel_patches.git
           cd kernel_platform
           # Copy SUSFS patches
