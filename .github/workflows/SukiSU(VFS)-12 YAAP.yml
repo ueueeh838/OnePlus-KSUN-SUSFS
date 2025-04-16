@@ -132,6 +132,12 @@ jobs:
           cd kernel_workspace
           LTO=thin ./kernel_platform/build_with_bazel.py -t ${{ github.event.inputs.CPUD }} gki
 
+      - name: Make AnyKernel3
+        run: |
+         git clone https://github.com/Xiaomichael/AnyKernel3 --depth=1
+         rm -rf ./AnyKernel3/.git
+         cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./AnyKernel3/
+         
       - name: Apply KPM configs
         run: |
           cd kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist
@@ -142,12 +148,6 @@ jobs:
           mv oImage Image
           cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
           cp Image $GITHUB_WORKSPACE/kernel_workspace/kernel
-
-      - name: Make AnyKernel3
-        run: |
-         git clone https://github.com/Xiaomichael/AnyKernel3 --depth=1
-         rm -rf ./AnyKernel3/.git
-         cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./AnyKernel3/
          
       - name: Upload AnyKernel3
         uses: actions/upload-artifact@v4
