@@ -152,5 +152,5 @@ jobs:
       - name: Upload AnyKernel3
         uses: actions/upload-artifact@v4
         with:
-         name: AnyKernel3_SukiSU_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
+         name: AnyKernel3_SukiSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
