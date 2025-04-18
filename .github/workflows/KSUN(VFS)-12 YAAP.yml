@@ -1,4 +1,4 @@
-name: KernelSU Next(VFS) OnePlus 12 YAAP
+name: KernelSU Next(VFS) YAAP
 on:
   workflow_dispatch:
     inputs:
