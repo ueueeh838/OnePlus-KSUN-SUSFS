@@ -1,4 +1,4 @@
-name: SukiSU(VFS) OnePlus 12 YAAP
+name: SukiSU(VFS) YAAP
 on:
   workflow_dispatch:
     inputs:
