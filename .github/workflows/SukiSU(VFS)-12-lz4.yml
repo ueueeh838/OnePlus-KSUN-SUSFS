@@ -1,4 +1,4 @@
-name: SukiSU(VFS) For OnePlus 6.1
+name: SukiSU(VFS)
 on:
   workflow_dispatch:
     inputs:
