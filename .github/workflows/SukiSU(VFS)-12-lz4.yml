@@ -1,4 +1,4 @@
-name: SukiSU(VFS) OnePlus 12
+name: SukiSU(VFS) For OnePlus 6.1
 on:
   workflow_dispatch:
     inputs:
@@ -133,7 +133,11 @@ jobs:
       - name: Build kernel
         run: |
           cd kernel_workspace
-          ./kernel_platform/build_with_bazel.py -t ${{ github.event.inputs.CPUD }} gki
+          if [[ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1"]]; then
+            LTO=thin ./kernel_platform/build_with_bazel.py -t ${{ github.event.inputs.CPUD }} gki
+          else
+            LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
+          fi
 
       - name: Make AnyKernel3
         run: |
