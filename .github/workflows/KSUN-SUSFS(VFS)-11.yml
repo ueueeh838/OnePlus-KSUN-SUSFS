@@ -1,4 +1,4 @@
-name: KernelSU Next(VFS)
+name: KernelSU Next(VFS) - 5.1
 on:
   workflow_dispatch:
     inputs:
