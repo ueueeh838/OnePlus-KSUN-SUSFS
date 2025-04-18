@@ -1,4 +1,4 @@
-name: KernelSU Next(VFS) OnePlus 11
+name: KernelSU Next(VFS) For OnePlus 5.1
 on:
   workflow_dispatch:
     inputs:
