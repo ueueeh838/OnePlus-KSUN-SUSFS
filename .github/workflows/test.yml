@@ -78,17 +78,17 @@ jobs:
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
           
-      - name: Set up KernelSU
+      - name: Set up ${{ github.event.inputs.KSU_VERSION }}
         run: |
           cd kernel_workspace/kernel_platform
-          if [[ "${{ github.event.inputs.KSU_VERSION" }} == "SukiSU_Ultra"]]; then
+          if [[ "${{ github.event.inputs.KSU_VERSION }}" == "SukiSU_Ultra"]]; then
             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-dev
             cd ./KernelSU
             KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10606)
             echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
             export KSU_VERSION=$KSU_VERSION
             sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
-          elif [[ "${{ github.event.inputs.KSU_VERSION" }} == "KernelSU_Next"]]; then
+          elif [[ "${{ github.event.inputs.KSU_VERSION }}" == "KernelSU_Next"]]; then
             curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
             cd KernelSU-Next
             KSU_VERSION=$(expr $(/usr/bin/git rev-list --count HEAD) "+" 10200)
@@ -112,20 +112,20 @@ jobs:
           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
           
-          if [[ "${{ github.event.inputs.KSU_VERSION" }} == "SukiSU_Ultra"]]; then
+          if [[ "${{ github.event.inputs.KSU_VERSION }}" == "SukiSU_Ultra"]]; then
             cd ./common
-            if [[ "${{ github.event.inputs.KERNEL_VERSION" }} == "6.1"]]; then
+            if [[ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1"]]; then
               patch -p1 < 001-lz4.patch || true
               patch -p1 < 002-zstd.patch || true
             fi
             patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
             patch -p1 -F 3 < 69_hide_stuff.patch
             patch -p1 -F 3 < syscall_hooks.patch
-          elif [[ "${{ github.event.inputs.KSU_VERSION" }} == "KernelSU_Next"]]; then
+          elif [[ "${{ github.event.inputs.KSU_VERSION }}" == "KernelSU_Next"]]; then
             cd ./KernelSU-Next
             patch -p1 < 0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch || true
             cd ../common
-            if [[ "${{ github.event.inputs.KERNEL_VERSION" }} == "6.1"]]; then
+            if [[ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1"]]; then
               patch -p1 < 001-lz4.patch || true
               patch -p1 < 002-zstd.patch || true
             fi
@@ -137,7 +137,7 @@ jobs:
       - name: Apply new hook and add configuration
         run: |
           cd kernel_workspace/kernel_platform
-          if [[ "${{ github.event.inputs.KSU_VERSION" }} == "SukiSU_Ultra"]]; then
+          if [[ "${{ github.event.inputs.KSU_VERSION }}" == "SukiSU_Ultra"]]; then
             # Add KSU configuration settings
             echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_KPM=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -162,7 +162,7 @@ jobs:
             echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
             # Remove check_defconfig
             sed -i '2s/check_defconfig//' ./common/build.config.gki
-          elif [[ "${{ github.event.inputs.KSU_VERSION" }} == "KernelSU_Next"]]; then
+          elif [[ "${{ github.event.inputs.KSU_VERSION }}" == "KernelSU_Next"]]; then
               cd kernel_workspace/kernel_platform
               echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
               echo "CONFIG_KSU_WITH_KPROBES=n" >> ./common/arch/arm64/configs/gki_defconfig
