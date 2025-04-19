@@ -1,4 +1,4 @@
-name: KernelSU Next(VFS) YAAP
+name: Build YAAP KernelSU Next
 on:
   workflow_dispatch:
     inputs:
