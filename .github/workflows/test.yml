@@ -104,7 +104,6 @@ jobs:
           cd kernel_platform
           # Copy SUSFS patches
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
-          cp ../../kernel_patches/69_hide_stuff.patch ./
           cp ../kernel_patches/next/syscall_hooks.patch ./common/
           cp ../kernel_patches/lz4/001-lz4.patch ./common/
           cp ../kernel_patches/lz4/002-zstd.patch ./common/
@@ -118,6 +117,7 @@ jobs:
               patch -p1 < 002-zstd.patch || true
             fi
             patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
+            cp ../../kernel_patches/69_hide_stuff.patch ./
             patch -p1 -F 3 < 69_hide_stuff.patch
             patch -p1 -F 3 < syscall_hooks.patch
           elif [ "${{ github.event.inputs.KSU_VERSION }}" == "KernelSU_Next"]; then
@@ -130,6 +130,7 @@ jobs:
               patch -p1 < 002-zstd.patch || true
             fi
             patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
+            cp ../../kernel_patches/69_hide_stuff.patch ./
             patch -p1 -F 3 < 69_hide_stuff.patch
             patch -p1 -F 3 < syscall_hooks.patch
           fi
