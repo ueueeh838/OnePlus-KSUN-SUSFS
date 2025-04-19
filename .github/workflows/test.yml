@@ -93,6 +93,7 @@ jobs:
             cd KernelSU-Next
             KSU_VERSION=$(expr $(/usr/bin/git rev-list --count HEAD) "+" 10200)
             echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
+            export KSU_VERSION=$KSU_VERSION
             sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
           fi
           
@@ -213,8 +214,16 @@ jobs:
           cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
           cp Image $GITHUB_WORKSPACE/kernel_workspace/kernel
          
-      - name: Upload AnyKernel3
+      - name: Upload AnyKernel3 With name
+        if: ${{ github.event.inputs.KERNEL_VERSION == '6.1' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_${{ github.event.inputs.KSU_VERSION }}_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
+         path: ./AnyKernel3/*
+
+      - name: Upload AnyKernel3
+        if: ${{ github.event.inputs.KERNEL_VERSION != '6.1' }}
+        uses: actions/upload-artifact@v4
+        with:
+         name: AnyKernel3_${{ github.event.inputs.KSU_VERSION }}_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
