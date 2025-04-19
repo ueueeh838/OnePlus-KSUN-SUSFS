@@ -1,4 +1,4 @@
-name: SukiSU(VFS) YAAP
+name: Build YAAP SukiSU
 on:
   workflow_dispatch:
     inputs:
