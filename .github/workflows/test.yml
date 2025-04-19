@@ -104,7 +104,6 @@ jobs:
           cd kernel_platform
           # Copy SUSFS patches
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
-          cp ../kernel_patches/next/0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch ./KernelSU-Next/
           cp ../../kernel_patches/69_hide_stuff.patch ./
           cp ../kernel_patches/next/syscall_hooks.patch ./common/
           cp ../kernel_patches/lz4/001-lz4.patch ./common/
@@ -122,6 +121,7 @@ jobs:
             patch -p1 -F 3 < 69_hide_stuff.patch
             patch -p1 -F 3 < syscall_hooks.patch
           elif [ "${{ github.event.inputs.KSU_VERSION }}" == "KernelSU_Next"]; then
+            cp ../kernel_patches/next/0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch ./KernelSU-Next/
             cd ./KernelSU-Next
             patch -p1 < 0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch || true
             cd ../common
