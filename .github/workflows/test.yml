@@ -93,7 +93,6 @@ jobs:
             cd KernelSU-Next
             KSU_VERSION=$(expr $(/usr/bin/git rev-list --count HEAD) "+" 10200)
             echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
-            export KSU_VERSION=$KSU_VERSION
             sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
           fi
           
