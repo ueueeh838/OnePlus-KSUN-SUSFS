@@ -1,4 +1,4 @@
-name: Build OnePlus 12 MKernelSU
+name: Build OnePlus 12 MKSU
 on:
   workflow_dispatch:
     inputs:
@@ -70,7 +70,7 @@ jobs:
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
          
-      - name: Set up KernelSU Next
+      - name: Set up MKSU
         run: |
          cd kernel_workspace/kernel_platform
          curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash -s main
@@ -125,7 +125,7 @@ jobs:
             echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
-            sed -i '2s/check_defconfig//' ./common/build.config.gki
+            sed -i 's/check_defconfig//' ./common/build.config.gki
          
       - name: Build kernel
         run: |
@@ -141,5 +141,5 @@ jobs:
       - name: Upload AnyKernel3
         uses: actions/upload-artifact@v4
         with:
-         name: AnyKernel3_KernelSU_Next_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
+         name: AnyKernel3_MKSU_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
