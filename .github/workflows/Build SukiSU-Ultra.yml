@@ -25,7 +25,7 @@ on:
 
 jobs:
   build:
-    name: Build ${{ github.event.inputs.FEIL }} SukiSU-Ultra
+    name: For ${{ github.event.inputs.FEIL }}
     runs-on: ubuntu-latest
 
     steps:
