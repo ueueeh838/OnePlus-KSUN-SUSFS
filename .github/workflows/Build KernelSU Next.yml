@@ -24,7 +24,7 @@ on:
         default: '6.1'
 jobs:
   build:
-    name: Build ${{ github.event.inputs.FEIL }} KernelSU Next
+    name: For ${{ github.event.inputs.FEIL }}
     runs-on: ubuntu-latest
     
     steps:
