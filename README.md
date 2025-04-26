@@ -3,8 +3,6 @@
 # 使用说明:
 一加内核开源地址：[OnePlusOSS](https://github.com/OnePlusOSS/kernel_manifest) [SM8650](https://github.com/OnePlusOSS/android_kernel_common_oneplus_sm8650)
 
-6系内核请使用 [KSUN](https://github.com/Xiaomichael/OnePlus-Actions/actions/workflows/KSUN-12.yml) [SukiSU](https://github.com/Xiaomichael/OnePlus-Actions/actions/workflows/SukiSU-12.yml) 并更改配置使用
-
-5系内核请使用 [KSUN](https://github.com/Xiaomichael/OnePlus-Actions/actions/workflows/KSUN-11.yml) [SukiSU](https://github.com/Xiaomichael/OnePlus-Actions/actions/workflows/SukiSU-11.yml) 并更改配置使用
+请使用 [KSUN](https://github.com/Xiaomichael/OnePlus-Actions/actions/workflows/Build%20KernelSU%20Next.yml) [SukiSU-Ultra](https://github.com/Xiaomichael/OnePlus-Actions/actions/workflows/Build%20SukiSU-Ultra.yml) 并更改配置使用
 
 # test为测试版构建，请勿使用！！！
