@@ -4,5 +4,3 @@
 一加内核开源地址：[OnePlusOSS](https://github.com/OnePlusOSS/kernel_manifest)
 
 请使用 [KernelSU NEXT](https://github.com/Xiaomichael/OnePlus-Actions/actions/workflows/Build%20KernelSU%20Next.yml) [SukiSU-Ultra](https://github.com/Xiaomichael/OnePlus-Actions/actions/workflows/Build%20SukiSU-Ultra.yml) 并更改配置使用
-
-# test为测试版构建，请勿使用！！！
