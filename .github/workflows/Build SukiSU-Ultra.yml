@@ -170,8 +170,14 @@ jobs:
       - name: Build kernel
         run: |
           cd kernel_workspace
+          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
+          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
+          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             ./kernel_platform/build_with_bazel.py -t ${{ github.event.inputs.CPUD }} gki
+          elif [ "${{ github.event.inputs.CPU }}" == 'sm8475' ]; then
+            LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
+            LTO=thin ./kernel_platform/oplus/build/oplus_rebuild_img.sh ${{ github.event.inputs.CPUD }} gki
           else
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
           fi
