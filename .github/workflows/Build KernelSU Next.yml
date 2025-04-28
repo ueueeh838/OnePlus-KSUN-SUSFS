@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       CPU:
-        description: "分支"
+        description: "CPU"
         required: true
         type: choice
         options:
@@ -14,7 +14,7 @@ on:
           - 'sm7675'
         default: 'sm8650'
       FEIL:
-        description: "配置文件"
+        description: "手机型号"
         required: true
         type: choice
         options:
