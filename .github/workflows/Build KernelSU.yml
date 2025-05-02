@@ -142,11 +142,6 @@ jobs:
           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
           cp ../../kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
-
-      - name: Add configuration
-        run: |
-            cd kernel_workspace/kernel_platform
-            echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
             
       - name: Build kernel
         run: |
@@ -192,17 +187,6 @@ jobs:
             echo "未找到 Image 文件，构建可能失败"
             exit 1
           fi
-         
-      - name: Apply KPM configs
-        run: |
-          cd kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist
-          curl -LO https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.11-beta/patch_linux
-          chmod +x patch_linux
-          ./patch_linux
-          rm -f Image
-          mv oImage Image
-          cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
-          cp Image $GITHUB_WORKSPACE/kernel_workspace/kernel
          
       - name: Upload AnyKernel3 lz4 & zstd
         if: ${{ github.event.inputs.KERNEL_VERSION == '6.1' }}
