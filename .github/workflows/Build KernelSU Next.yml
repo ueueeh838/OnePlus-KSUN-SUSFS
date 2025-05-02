@@ -21,6 +21,7 @@ on:
           - 'oneplus12_v'
           - 'oneplus_11_v'
           - 'oneplus_ace3_pro_v'
+          - 'oneplus_ace2pro_v'
           - 'oneplus_pad2_v'
           - 'oneplus_ace5'
           - 'oneplus_ace3_v'
