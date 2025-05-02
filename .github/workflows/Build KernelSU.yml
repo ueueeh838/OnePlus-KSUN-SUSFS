@@ -134,7 +134,7 @@ jobs:
 
           cd ./KernelSU
           patch -p1 < 10_enable_susfs_for_ksu.patch || true
-          cd ./common
+          cd ../common
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             patch -p1 < 001-lz4.patch || true
             patch -p1 < 002-zstd.patch || true
