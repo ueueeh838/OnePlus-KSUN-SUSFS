@@ -179,7 +179,7 @@ jobs:
           fi
 
          
-- name: Make AnyKernel3
+      - name: Make AnyKernel3
         run: |
          git clone https://github.com/Xiaomichael/AnyKernel3 --depth=1
          rm -rf ./AnyKernel3/.git
