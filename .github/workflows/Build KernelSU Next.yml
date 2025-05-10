@@ -111,7 +111,7 @@ jobs:
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
          
-      - name: Set up KernelSU Next
+      - name: Set Up KernelSU Next
         run: |
          cd kernel_workspace/kernel_platform
          curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
@@ -120,7 +120,7 @@ jobs:
          echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
          sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
         
-      - name: Set up susfs
+      - name: Set Up SUSFS
         run: |
            cd kernel_workspace
            git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
@@ -147,7 +147,7 @@ jobs:
            patch -p1 -F 3 < 69_hide_stuff.patch
            patch -p1 -F 3 < syscall_hooks.patch
            
-      - name: Apply new hook and add configuration
+      - name: Apply new hook & Add configuration
         run: |
             cd kernel_workspace/kernel_platform
             echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -170,7 +170,7 @@ jobs:
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
             sed -i 's/check_defconfig//' ./common/build.config.gki
          
-      - name: Build kernel
+      - name: Build Kernel
         run: |
           cd kernel_workspace
           sed -i '$s|echo "\$res"|echo "$res-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
@@ -181,7 +181,6 @@ jobs:
           else
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
           fi
-
          
       - name: Make AnyKernel3
         run: |
@@ -195,7 +194,6 @@ jobs:
           target1="./AnyKernel3/"
           target2="./kernel_workspace/kernel"
 
-          # 查找 Image 文件
           if find "$dir1" -name "Image" | grep -q "Image"; then
             image_path="$dir1"Image
           elif find "$dir2" -name "Image" | grep -q "Image"; then
@@ -210,7 +208,6 @@ jobs:
             image_path=$(find "./kernel_workspace/kernel_platform/common/out/" -name "Image" | head -n 1)
           fi
 
-          # 拷贝 Image
           if [ -n "$image_path" ] && [ -f "$image_path" ]; then
             mkdir -p "$dir1"
             if [ "$(realpath "$image_path")" != "$(realpath "$dir1"Image)" ]; then
