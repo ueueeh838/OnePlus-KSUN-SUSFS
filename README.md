@@ -1,4 +1,5 @@
 # 请及时同步代码以防止构建错误！！！
+# 求点个star呗
 
 # 使用说明:
 [![一加内核开源地址](https://img.shields.io/badge/一加内核开源地址-EB0029?logo=oneplus&logoColor=white&style=flat-square)](https://github.com/OnePlusOSS/kernel_manifest)
