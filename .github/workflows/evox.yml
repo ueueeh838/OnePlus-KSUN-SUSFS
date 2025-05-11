@@ -73,7 +73,7 @@ jobs:
       - name: Initialize repo and sync
         run: |
          mkdir kernel_workspace && cd kernel_workspace
-         repo init -u https://github.com/op12-evolution-x/manifest.git -b refs/heads/vic -m deault.xml --depth=1
+         repo init -u https://github.com/op12-evolution-x/manifest.git -b refs/heads/vic -m default.xml --depth=1
          repo sync
          rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
          rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
