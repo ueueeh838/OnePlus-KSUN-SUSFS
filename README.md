@@ -11,7 +11,7 @@
 
 关于处理器的代号查看
 
-![image](https://github.com/user-attachments/assets/7132dc28-002b-42a3-ac46-d68bb46367ce)
+![image](https://github.com/user-attachments/assets/32a87138-dfbd-4153-a2ec-c11a30455efe)
 
 上面写的啥选啥即可
 
