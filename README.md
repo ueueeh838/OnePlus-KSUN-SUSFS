@@ -17,4 +17,7 @@
 > ![image](https://github.com/user-attachments/assets/fc217103-24ef-45fa-a7e1-f13cfd64f771)
 >
 > 上面写的啥选啥即可
-
+>
+> 最后在运行时选择的配置就会如下
+>
+> ![image](https://github.com/user-attachments/assets/6f6d1679-c46e-4085-8b6c-24e71fd7eca1)
