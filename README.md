@@ -1,6 +1,6 @@
 # 请及时同步代码以防止构建错误！！！求点个star呗
 
-> [!TIP]
+> [!使用说明]
 > [![一加内核开源地址](https://img.shields.io/badge/一加内核开源地址-EB0029?logo=oneplus&logoColor=white&style=flat-square)](https://github.com/OnePlusOSS/kernel_manifest)
 > 
 > 以一加12为例，打开上面的链接，配置文件中的_x后缀是你正在使用系统版本。_v是Android15、_u是Android14、_t是Android13、无后缀一般是一个机型出厂Android版本，那么最新的一加12配置就是oneplus12_v
