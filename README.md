@@ -14,7 +14,7 @@
 >
 > 关于处理器的代号查看
 >
-> ![image](https://github.com/user-attachments/assets/32a87138-dfbd-4153-a2ec-c11a30455efe)
+> ![image](https://github.com/user-attachments/assets/fc217103-24ef-45fa-a7e1-f13cfd64f771)
 >
 > 上面写的啥选啥即可
 
