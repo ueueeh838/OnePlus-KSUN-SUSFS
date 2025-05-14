@@ -1,4 +1,4 @@
-# 求点star⭐
+# 求点⭐star⭐
 
 ### [一加内核开源地址](https://github.com/OnePlusOSS/kernel_manifest)
 
