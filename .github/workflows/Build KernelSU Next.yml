@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       CPU:
-        description: "CPU"
+        description: "CPU分支"
         required: true
         type: choice
         options:
