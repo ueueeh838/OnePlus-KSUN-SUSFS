@@ -10,7 +10,7 @@
 >
 > ![image](https://github.com/user-attachments/assets/737fcdb5-fce0-473d-8945-f1491db5727a)
 >
-> 点击branches/tags可以切换处理器，然后再寻找你想要的配置即可
+> 点击Branches可以切换处理器分支，然后再寻找你想要的配置即可
 >
 > ![image](https://github.com/user-attachments/assets/58f31536-b88e-4613-9865-3e0574868928)
 >
