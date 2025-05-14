@@ -22,4 +22,4 @@
 >
 > 最后在运行时选择的配置就会如下
 >
-> ![image](https://github.com/user-attachments/assets/6f6d1679-c46e-4085-8b6c-24e71fd7eca1)
+>![image](https://github.com/user-attachments/assets/ac7ce58c-5c28-4a8b-afe1-58908aea51d8)
