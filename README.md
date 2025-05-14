@@ -1,4 +1,4 @@
-# 请及时同步代码以防止构建错误！！！求点个star呗
+# 求点star⭐
 
 # [一加内核开源地址](https://github.com/OnePlusOSS/kernel_manifest)
 
