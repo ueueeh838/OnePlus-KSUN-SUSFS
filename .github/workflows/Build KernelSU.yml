@@ -36,6 +36,7 @@ on:
           - 'oneplus_ace_pro_v'
           - 'oneplus_10_pro_v'
           - 'oneplus_ace_3v_v'
+          - ' '
         default: 'oneplus12_v'
       CPUD:
         description: "处理器代号"
