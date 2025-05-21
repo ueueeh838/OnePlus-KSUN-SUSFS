@@ -138,7 +138,7 @@ jobs:
            cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 
            # Apply patches
-           cd ../common
+           cd ./common
            if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
              patch -p1 < 001-lz4.patch || true
              patch -p1 < 002-zstd.patch || true
