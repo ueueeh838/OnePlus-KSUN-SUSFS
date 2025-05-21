@@ -140,7 +140,7 @@ jobs:
 
            # Apply patches
            cd ./KernelSU-Next
-           patch -p1 < kernel-patch-susfs-v1.5.7-to-KernelSU-Next.patch || true
+           patch -p1 < --forward < kernel-patch-susfs-v1.5.7-to-KernelSU-Next.patch || true
            cd ./common
            if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
              patch -p1 < 001-lz4.patch || true
