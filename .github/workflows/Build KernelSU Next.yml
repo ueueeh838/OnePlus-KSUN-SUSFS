@@ -118,7 +118,7 @@ jobs:
       - name: Set up KernelSU Next
         run: |
          cd kernel_workspace/kernel_platform
-         curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs-dev
+         curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next
          cd KernelSU-Next
          KSU_VERSION=$(expr $(/usr/bin/git rev-list --count HEAD) "+" 10200)
          echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
@@ -132,12 +132,15 @@ jobs:
            cd kernel_platform
            cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
            cp ../kernel_patches/next/syscall_hooks.patch ./common/
+           cp ../kernel_patches/next/kernel-patch-susfs-v1.5.7-to-KernelSU-Next.patch ./KernelSU-Next/
            cp ../kernel_patches/lz4/001-lz4.patch ./common/
            cp ../kernel_patches/lz4/002-zstd.patch ./common/
            cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
            cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 
            # Apply patches
+           cd ./KernelSU-Next
+           patch -p1 < kernel-patch-susfs-v1.5.7-to-KernelSU-Next.patch || true
            cd ./common
            if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
              patch -p1 < 001-lz4.patch || true
