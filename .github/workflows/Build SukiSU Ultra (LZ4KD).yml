@@ -147,7 +147,9 @@ jobs:
           patch -p1 -F 3 < 69_hide_stuff.patch
           patch -p1 -F 3 < syscall_hooks.patch
           cp ../../SukiSU_patch/other/zram/zram_patch/${{ github.event.inputs.KERNEL_VERSION }}/lz4kd.patch ./
+          cp ../../SukiSU_patch/other/zram/zram_patch/${{ github.event.inputs.KERNEL_VERSION }}/lz4k_oplus.patch ./
           patch -p1 -F 3 < lz4kd.patch || true
+          patch -p1 -F 3 < lz4k_oplus.patch || true
 
       - name: Apply new hook & Add configuration
         run: |
@@ -256,3 +258,9 @@ jobs:
         with:
          name: Image_KernelSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: kernel_workspace/kernel
+
+      - name: Upload zram.ko
+        uses: actions/upload-artifact@v4
+        with:
+          name: zram.ko
+          path: kernel_workspace/kernel_platform/dist/zram.ko
