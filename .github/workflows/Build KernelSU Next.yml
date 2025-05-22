@@ -141,7 +141,7 @@ jobs:
            # Apply patches
            cd ./KernelSU-Next
            patch -p1 < --forward < 0001_susfs_157_for_ksunext.patch || true
-           cd ./common
+           cd ../common
            if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
              patch -p1 < 001-lz4.patch || true
              patch -p1 < 002-zstd.patch || true
