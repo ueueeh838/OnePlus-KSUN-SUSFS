@@ -123,6 +123,10 @@ jobs:
          sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
          sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
+
+      - name : find
+        run: |
+          find -name lld
           
       - name: Set up SukiSU Ultra
         run: |
