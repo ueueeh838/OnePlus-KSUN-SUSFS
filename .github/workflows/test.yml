@@ -126,7 +126,7 @@ jobs:
 
       - name : find
         run: |
-          find -name lld
+          find -name ld.lld
           
       - name: Set up SukiSU Ultra
         run: |
