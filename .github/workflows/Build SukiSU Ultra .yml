@@ -283,27 +283,27 @@ jobs:
           cp Image $GITHUB_WORKSPACE/kernel_workspace/kernel
          
       - name: Upload AnyKernel3 with lz4kd
-        if: ${{ github.event.inputs.lz4kd == 'ture' }}
+        if: ${{ github.event.inputs.lz4kd == 'true' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
       - name: Upload AnyKernel3
-        if: ${{ github.event.inputs.lz4kd == 'false' }}
+        if: ${{ github.event.inputs.lz4kd != 'true' }}
         uses: actions/upload-artifact@v4
         with:
-         name: AnyKernel3_SukiSU_Ultra${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
+         name: AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
       - name: Find zram.ko
-        if: ${{ github.event.inputs.lz4kd == 'ture' }}
+        if: ${{ github.event.inputs.lz4kd == 'true' }}
         run: |
           find -name zram.ko
           find -name crypto_zstdn.ko
           
       - name: Upload zram.ko
-        if: ${{ github.event.inputs.lz4kd == 'ture' }}
+        if: ${{ github.event.inputs.lz4kd == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: zram.ko
