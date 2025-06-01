@@ -248,12 +248,6 @@ jobs:
         with:
          name: AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
-          
-      - name: Upload Image
-        uses: actions/upload-artifact@v4
-        with:
-         name: Image_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
-         path: kernel_workspace/kernel
          
       - name: Find zram.ko
         run: |
