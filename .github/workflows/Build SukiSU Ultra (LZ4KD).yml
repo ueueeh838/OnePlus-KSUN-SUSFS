@@ -257,10 +257,10 @@ jobs:
          
       - name: Find zram.ko
         run: |
-          find -name *.ko
+          find -name zram.ko
           
-  #    - name: Upload zram.ko
-  #      uses: actions/upload-artifact@v4
-  #      with:
-  #        name: zram.ko
-  #        path: kernel_workspace/kernel_platform/dist/zram.ko
+      - name: Upload zram.ko
+        uses: actions/upload-artifact@v4
+        with:
+          name: zram.ko
+          path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
