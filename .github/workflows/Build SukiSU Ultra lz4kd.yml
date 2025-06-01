@@ -66,7 +66,9 @@ on:
           - '5.10'
         default: '6.1'
       lz4kd:
+       description: "是否启用lz4kd"
        required: true
+       type: boolean
        default: true
         
 jobs:
@@ -295,11 +297,13 @@ jobs:
          path: ./AnyKernel3/*
          
       - name: Find zram.ko
+        if: ${{ github.event.inputs.lz4kd == 'ture' }}
         run: |
           find -name zram.ko
           find -name crypto_zstdn.ko
           
       - name: Upload zram.ko
+        if: ${{ github.event.inputs.lz4kd == 'ture' }}
         uses: actions/upload-artifact@v4
         with:
           name: zram.ko
