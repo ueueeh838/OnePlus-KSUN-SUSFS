@@ -257,7 +257,7 @@ jobs:
          
       - name: Find zram.ko
         run: |
-          find -name crypto_zstdn.ko
+          find -name *.ko
           
   #    - name: Upload zram.ko
   #      uses: actions/upload-artifact@v4
