@@ -201,7 +201,7 @@ jobs:
           
       - name: Build Kernel
         run: |
-          export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
+          export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r450784e/bin:$PATH"
           ccache clang -v
           sudo apt install libelf-dev
           cd kernel_workspace/kernel_platform/common
