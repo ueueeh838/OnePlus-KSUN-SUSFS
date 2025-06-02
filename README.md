@@ -1,6 +1,6 @@
 # 求``⭐⭐star⭐⭐``
 
-### [```一加内核开源地址```](https://github.com/OnePlusOSS/kernel_manifest)
+### [```OnePlus kernel 开源地址```](https://github.com/OnePlusOSS/kernel_manifest)
 
 > [!TIP]
 >
