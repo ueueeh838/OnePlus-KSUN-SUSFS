@@ -306,14 +306,14 @@ jobs:
           find -name crypto_zstdn.ko
           
       - name: Upload zram.ko
-        if: ${{ github.event.inputs.lz4kd == 'true' }}
+        if: ${{ github.event.inputs.lz4kd == 'true' }} || ${{ github.event.inputs.KERNEL_VERSION == '6.1' }} 
         uses: actions/upload-artifact@v4
         with:
           name: zram.ko
           path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
 
       - name: Upload crypto_zstdn.ko
-        if: ${{ github.event.inputs.lz4kd == 'true' }}
+        if: ${{ github.event.inputs.lz4kd == 'true' }} || ${{ github.event.inputs.KERNEL_VERSION != '6.1' }} 
         uses: actions/upload-artifact@v4
         with:
           name: crypto_zstdn.ko
