@@ -299,7 +299,7 @@ jobs:
          name: AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: Find zram.ko
+      - name: Find zram.ko & crypto_zstdn.ko
         if: ${{ github.event.inputs.lz4kd == 'true' }}
         run: |
           find -name zram.ko
@@ -311,3 +311,10 @@ jobs:
         with:
           name: zram.ko
           path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
+
+      - name: Upload crypto_zstdn.ko
+        if: ${{ github.event.inputs.lz4kd == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypto_zstdn.ko
+          path: ./kernel_workspace/kernel_platform/out/msm-${{ github.event.inputs.CPUD }}-${{ github.event.inputs.CPUD }}-gki/dist/crypto_zstdn.ko
