@@ -70,7 +70,12 @@ jobs:
   build:
     name: For ${{ github.event.inputs.FEIL }}
     runs-on: ubuntu-latest
-    
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_HARDLINK: "true"
+      CCACHE_DIR: /home/runner/.ccache  
+      CCACHE_MAXSIZE: 8G
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
