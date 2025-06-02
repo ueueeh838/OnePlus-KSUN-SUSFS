@@ -3,7 +3,9 @@
 ### [```OnePlus kernel 开源地址```](https://github.com/OnePlusOSS/kernel_manifest)
 
 > [!TIP]
->
+> 
+> 目前暂``不支持`` ``一加6.6系``，随缘更新
+> 
 > 食用方法：
 >
 > 以``一加12``为例，打开上面的链接，配置文件中的``_x``后缀是你正在使用系统版本。``_v``是``Android15``、``_u``是``Android14``、``_t``是``Android13``、无后缀一般是一个机型出厂``Android``版本，那么最新的``一加12``配置就是``oneplus12_v``
