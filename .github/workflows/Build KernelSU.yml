@@ -135,18 +135,12 @@ jobs:
           # Copy SUSFS patches
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
           cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU
-          cp ../kernel_patches/001-lz4.patch ./common/
-          cp ../kernel_patches/002-zstd.patch ./common/
           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 
           cd ./KernelSU
           patch -p1 < 10_enable_susfs_for_ksu.patch || true
           cd ../common
-          if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
-            patch -p1 < 001-lz4.patch || true
-            patch -p1 < 002-zstd.patch || true
-          fi
           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
           cp ../../kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
@@ -154,9 +148,6 @@ jobs:
       - name: Build kernel
         run: |
           cd kernel_workspace
-          sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
-          sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
-          sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             ./kernel_platform/build_with_bazel.py -t ${{ github.event.inputs.CPUD }} gki
           else
