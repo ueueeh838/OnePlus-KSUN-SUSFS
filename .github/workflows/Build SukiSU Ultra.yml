@@ -111,7 +111,7 @@ jobs:
           restore-keys: |
             ccache-${{ runner.os }}-
             
-      - name: Install repo tool
+      - name: 📥 Install repo tool
         run: |
          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
          chmod a+x ~/repo
@@ -285,34 +285,34 @@ jobs:
           cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
           cp Image $GITHUB_WORKSPACE/kernel_workspace/kernel
          
-      - name: Upload AnyKernel3 with lz4kd
+      - name: 📤 Upload AnyKernel3 with lz4kd
         if: ${{ github.event.inputs.lz4kd == 'true' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: Upload AnyKernel3
+      - name: 📤 Upload AnyKernel3
         if: ${{ github.event.inputs.lz4kd != 'true' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: Find zram.ko & crypto_zstdn.ko
+      - name: 📝 Find zram.ko & crypto_zstdn.ko
         if: ${{ github.event.inputs.lz4kd == 'true' }}
         run: |
           find -name zram.ko
           find -name crypto_zstdn.ko
           
-      - name: Upload zram.ko
+      - name: 📤 Upload zram.ko
         if: ${{ github.event.inputs.lz4kd == 'true' }} || ${{ github.event.inputs.KERNEL_VERSION == '6.1' }} 
         uses: actions/upload-artifact@v4
         with:
           name: zram.ko
           path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
 
-      - name: Upload crypto_zstdn.ko
+      - name: 📤 Upload crypto_zstdn.ko
         if: ${{ github.event.inputs.lz4kd == 'true' }} || ${{ github.event.inputs.KERNEL_VERSION != '6.1' }} 
         uses: actions/upload-artifact@v4
         with:
