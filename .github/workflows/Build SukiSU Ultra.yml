@@ -82,7 +82,7 @@ jobs:
       CCACHE_DIR: /home/runner/.ccache  
       CCACHE_MAXSIZE: 8G
     steps:
-      - name: Maximize build space
+      - name: 🚀 Maximize build space (最大化构建空间)
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 8192
@@ -97,13 +97,13 @@ jobs:
          git config --global user.name "bulid"
          git config --global user.email "2210077278@qq.com"
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies (安装依赖)
         run: |
          sudo apt update && sudo apt upgrade -y
          sudo apt install -y python3 git curl
          sudo apt install -y python3 git curl ccache
          
-      - name: Restore ccache
+      - name: 📥 Restore ccache (恢复 ccache 缓存)
         uses: actions/cache@v3
         with:
           path: /home/runner/.ccache
@@ -117,7 +117,7 @@ jobs:
          chmod a+x ~/repo
          sudo mv ~/repo /usr/local/bin/repo
 
-      - name: Initialize repo and sync
+      - name: 📥 Initialize repo and sync （克隆内核源码）
         run: |
          mkdir kernel_workspace && cd kernel_workspace
          repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
@@ -134,7 +134,7 @@ jobs:
          sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
           
-      - name: Set up SukiSU Ultra
+      - name: ⚙️ Set up SukiSU Ultra (配置 SukiSU Ultra)
         run: |
           cd kernel_workspace/kernel_platform
           curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-dev
@@ -144,7 +144,7 @@ jobs:
           export KSU_VERSION=$KSU_VERSION
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
           
-      - name: Set up SUSFS
+      - name: 🔨 Set up SUSFS
         run: |
           cd kernel_workspace
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
@@ -176,7 +176,7 @@ jobs:
             patch -p1 -F 3 < lz4k_oplus.patch || true
           fi
           
-      - name: Add sched_ext
+      - name: 🔨 Add sched_ext
         run: |
          cd kernel_workspace/kernel_platform/
          git clone https://github.com/HanKuCha/sched_ext.git
@@ -184,7 +184,7 @@ jobs:
          rm -rf ./sched_ext/.git
          cd common/kernel/sched
 
-      - name: Apply new hook & Add configuration
+      - name: 🔨 Apply new hook & Add configuration
         run: |
           cd kernel_workspace/kernel_platform
           # Add KSU configuration settings
@@ -222,20 +222,20 @@ jobs:
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
           
-      - name: Build Kernel
+      - name: 🔨 Build Kernel (构建内核)
         run: |
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
             ccache clang -v
             sudo apt install libelf-dev
             cd kernel_workspace/kernel_platform/common
-            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out KCFLAGS+=-Wno-error gki_defconfig all
+            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out KCFLAGS+=-O2 gki_defconfig all
           else
             cd kernel_workspace
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
           fi
           
-      - name: Make AnyKernel3
+      - name: 📦 Package kernel to AnyKernel3 (打包内核到 AnyKernel3)
         run: |
           git clone https://github.com/Xiaomichael/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
@@ -274,7 +274,7 @@ jobs:
             exit 1
           fi
          
-      - name: Apply KPM configs
+      - name: 🛠️ KPM Patching Image Files (KPM 修补 Image 文件)
         run: |
           cd kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist
           curl -LO https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.11-beta/patch_linux
