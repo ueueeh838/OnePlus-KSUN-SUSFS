@@ -2,7 +2,7 @@
 
 # 觉得好用可以
 
-![photo_2025-06-04_23-00-23](https://github.com/user-attachments/assets/00e975ee-34e5-4d8a-b8e2-33a2328913cf)
+![image](https://github.com/user-attachments/assets/331a44ba-c666-4368-87d6-df55de482b58)
 
 ### [```OnePlus kernel 开源地址```](https://github.com/OnePlusOSS/kernel_manifest)
 
