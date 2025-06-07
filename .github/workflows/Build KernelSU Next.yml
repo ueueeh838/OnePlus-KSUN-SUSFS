@@ -18,7 +18,7 @@ on:
         required: true
         type: choice
         options:
-          - 'oneplus12'
+          - 'oneplus_12'
           - 'oneplus_ace3_pro'
           - 'oneplus_ace5'
           - 'oneplus_pad2'
@@ -34,7 +34,7 @@ on:
           - 'oneplus_10_pro'
           - 'oneplus_ace_3v'
           - ' '
-        default: 'oneplus12'
+        default: 'oneplus_12'
       CPUD:
         description: "处理器代号"
         required: true
