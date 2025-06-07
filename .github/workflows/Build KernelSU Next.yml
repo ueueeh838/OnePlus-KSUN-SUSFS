@@ -18,26 +18,23 @@ on:
         required: true
         type: choice
         options:
-          - 'oneplus12_v'
-          - 'oneplus12_u'
-          - 'oneplus_ace3_pro_v'
+          - 'oneplus12'
+          - 'oneplus_ace3_pro'
           - 'oneplus_ace5'
-          - 'oneplus_pad2_v'
-          - 'oneplus_11_v'
-          - 'oneplus_11_u'
-          - 'oneplus_11_t'
-          - 'oneplus_12r_v'
-          - 'oneplus_ace2pro_v'
-          - 'oneplus_ace3_v'
-          - 'oneplus_open_v'
-          - 'oneplus_10t_v'
-          - 'oneplus_11r_v'
-          - 'oneplus_ace2_v'
-          - 'oneplus_ace_pro_v'
-          - 'oneplus_10_pro_v'
-          - 'oneplus_ace_3v_v'
+          - 'oneplus_pad2'
+          - 'oneplus_11'
+          - 'oneplus_12r'
+          - 'oneplus_ace2pro'
+          - 'oneplus_ace3'
+          - 'oneplus_open'
+          - 'oneplus_10t'
+          - 'oneplus_11r'
+          - 'oneplus_ace2'
+          - 'oneplus_ace_pro'
+          - 'oneplus_10_pro'
+          - 'oneplus_ace_3v'
           - ' '
-        default: 'oneplus12_v'
+        default: 'oneplus12'
       CPUD:
         description: "处理器代号"
         required: true
@@ -115,7 +112,7 @@ jobs:
       - name: Initialize repo and sync
         run: |
          mkdir kernel_workspace && cd kernel_workspace
-         repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
+         repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
          repo sync
          rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
          rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
