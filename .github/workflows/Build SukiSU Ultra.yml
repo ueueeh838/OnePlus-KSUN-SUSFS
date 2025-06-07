@@ -212,11 +212,11 @@ jobs:
           # Add BBR
           echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_DEFAULT_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_TCP_CONG_BIC=n" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_TCP_CONG_WESTWOOD=n" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_TCP_CONG_HTCP=n" >> ./common/arch/arm64/configs/gki_defconfig
+          
           if [ "${{ github.event.inputs.lz4kd }}" == "Open" ]; then
             # Add lz4kd
             echo "CONFIG_ZSMALLOC=y" >> ./common/arch/arm64/configs/gki_defconfig
