@@ -92,7 +92,7 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - name: 📦 Configure Git
+      - name: 📦 Configure Git (设置下载账户)
         run: |
          git config --global user.name "bulid"
          git config --global user.email "2210077278@qq.com"
@@ -111,13 +111,13 @@ jobs:
           restore-keys: |
             ccache-${{ runner.os }}-
             
-      - name: 📥 Install repo tool
+      - name: 📥 Install repo tool (下载repo工具)
         run: |
          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
          chmod a+x ~/repo
          sudo mv ~/repo /usr/local/bin/repo
 
-      - name: 📥 Initialize repo and sync （克隆内核源码）
+      - name: 📥 Initialize repo and sync (克隆内核源码)
         run: |
          mkdir kernel_workspace && cd kernel_workspace
          repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
@@ -144,7 +144,7 @@ jobs:
           export KSU_VERSION=$KSU_VERSION
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
           
-      - name: 🔧 Set up SUSFS
+      - name: 🔧 Set up SUSFS (配置 SUSFS)
         run: |
           cd kernel_workspace
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
@@ -176,7 +176,7 @@ jobs:
             patch -p1 -F 3 < lz4k_oplus.patch || true
           fi
           
-      - name: 🔧 Add sched_ext
+      - name: 🔧 Add sched_ext (配置 风驰内核驱动)
         run: |
          cd kernel_workspace/kernel_platform/
          git clone https://github.com/HanKuCha/sched_ext.git
@@ -184,7 +184,7 @@ jobs:
          rm -rf ./sched_ext/.git
          cd common/kernel/sched
 
-      - name: 🔧 Apply new hook & Add configuration
+      - name: 🔧 Apply new hook & Add configuration (配置 一些内核开关)
         run: |
           cd kernel_workspace/kernel_platform
           # Add KSU configuration settings
@@ -292,27 +292,27 @@ jobs:
           cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
           cp Image $GITHUB_WORKSPACE/kernel_workspace/kernel
          
-      - name: 📤 Upload AnyKernel3 with lz4kd
+      - name: 📤 Upload AnyKernel3 with lz4kd (上传 AnyKernel3)
         if: ${{ github.event.inputs.lz4kd == 'Open' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: 📤 Upload AnyKernel3
+      - name: 📤 Upload AnyKernel3 (上传 AnyKernel3)
         if: ${{ github.event.inputs.lz4kd != 'Open' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: 📝 Find zram.ko & crypto_zstdn.ko
+      - name: 📝 Find zram.ko & crypto_zstdn.ko (查找 zram.ko & crypto_zstdn.ko)
         if: ${{ github.event.inputs.lz4kd == 'Open' }}
         run: |
           find -name zram.ko
           find -name crypto_zstdn.ko
           
-      - name: 📤 Upload zram.ko
+      - name: 📤 Upload zram.ko (上传 zram.ko)
         if: ${{ github.event.inputs.lz4kd == 'Open' }}
         uses: actions/upload-artifact@v4
         with:
