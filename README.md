@@ -4,7 +4,7 @@
 
 ![image](https://github.com/user-attachments/assets/331a44ba-c666-4368-87d6-df55de482b58)
 
-### [```OnePlus kernel 开源地址```](https://github.com/OnePlusOSS/kernel_manifest)
+### [```OnePlus kernel 开源地址```](https://github.com/Xiaomichael/kernel_manifest)
 
 > [!TIP]
 > 
@@ -12,9 +12,9 @@
 > 
 > 食用方法：
 >
-> 以``一加12``为例，打开上面的链接，配置文件中的``_x``后缀是你正在使用系统版本。``_v``是``Android15``、``_u``是``Android14``、``_t``是``Android13``、无后缀一般是一个机型出厂``Android``版本，那么最新的``一加12``配置就是``oneplus12_v``
+> 以``一加12``为例，打开上面的链接，配置文件中的``_x``后缀是你正在使用系统版本。``无后缀``是``Android15``、``_u``是``Android14``、``_t``是``Android13``，那么最新的``一加12``配置就是``oneplus12_v``
 >
-> ![image](https://github.com/user-attachments/assets/737fcdb5-fce0-473d-8945-f1491db5727a)
+> ![image](https://github.com/user-attachments/assets/f159369e-7caf-42d9-80cb-b9dd5e52ad77)
 >
 > 点击``Branches``可以切换处理器分支，然后再寻找你想要的配置即可
 >
