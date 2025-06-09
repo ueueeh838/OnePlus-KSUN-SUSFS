@@ -12,9 +12,9 @@
 > 
 > 食用方法：
 >
-> 以``一加12``为例，打开上面的链接，配置文件中的``_x``后缀是你正在使用系统版本。``无后缀``是``Android15``、``_u``是``Android14``、``_t``是``Android13``，那么最新的``一加12``配置就是``oneplus_12v``
+> 以``一加12``为例，打开上面的链接，配置文件中的``_x``后缀是你正在使用系统版本。经更改后，``无后缀``是``Android15``、``_u``是``Android14``、``_t``是``Android13``，那么最新的``一加12``配置就是``oneplus_12``
 >
-> ![image](https://github.com/user-attachments/assets/f159369e-7caf-42d9-80cb-b9dd5e52ad77)
+> ![image](https://github.com/user-attachments/assets/88f6940b-4b2c-462f-b8fa-3d9dd2f2faec)
 >
 > 点击``Branches``可以切换处理器分支，然后再寻找你想要的配置即可
 >
