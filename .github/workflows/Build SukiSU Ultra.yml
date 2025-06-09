@@ -284,7 +284,7 @@ jobs:
       - name: 🛠️ KPM Patching Image Files (KPM 修补 Image 文件)
         run: |
           cd kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist
-          curl -LO https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.11.4/patch_linux
+          curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.11.4/patch_linux
           chmod +x patch_linux
           ./patch_linux
           rm -f Image
