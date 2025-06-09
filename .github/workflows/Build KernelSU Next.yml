@@ -74,7 +74,7 @@ jobs:
       CCACHE_DIR: /home/runner/.ccache  
       CCACHE_MAXSIZE: 8G
     steps:
-      - name: Maximize build space
+      - name: 🚀 Maximize build space (最大化构建空间)
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 8192
@@ -84,18 +84,18 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           
-      - name: Configure Git
+      - name: 📦 Configure Git (设置下载账户)
         run: |
          git config --global user.name "build"
          git config --global user.email "2210077278@qq.com"
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies (安装依赖)
         run: |
          sudo apt update && sudo apt upgrade -y
          sudo apt install -y python3 git curl
          sudo apt install -y python3 git curl ccache
          
-      - name: Restore ccache
+      - name: 📥 Restore ccache (恢复 ccache 缓存)
         uses: actions/cache@v3
         with:
           path: /home/runner/.ccache
@@ -103,13 +103,13 @@ jobs:
           restore-keys: |
             ccache-${{ runner.os }}-
 
-      - name: Install repo tool
+      - name: 📥 Install repo tool (下载repo工具)
         run: |
          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
          chmod a+x ~/repo
          sudo mv ~/repo /usr/local/bin/repo
 
-      - name: Initialize repo and sync
+      - name: 📥 Initialize repo and sync (克隆内核源码)
         run: |
          mkdir kernel_workspace && cd kernel_workspace
          repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
@@ -122,11 +122,11 @@ jobs:
          sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/common/scripts/setlocalversion
          sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/external/dtc/scripts/setlocalversion
-         sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
-         sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
-         sed -i '$s|echo "\$res"|echo "-OKI-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
+         sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
+         sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
+         sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
          
-      - name: Set up KernelSU Next
+      - name: ⚙️ Set up KernelSU Next (配置 KernelSU Next)
         run: |
          cd kernel_workspace/kernel_platform
          curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next
@@ -135,7 +135,7 @@ jobs:
          echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
          sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
         
-      - name: Set up SUSFS
+      - name: 🔧 Set up SUSFS (配置 SUSFS)
         run: |
            cd kernel_workspace
            git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
@@ -148,7 +148,6 @@ jobs:
            cp ../kernel_patches/002-zstd.patch ./common/
            cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
            cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
-
            # Apply patches
            cd ./KernelSU-Next
            patch -p1 < --forward < 0001-kernel-patch-susfs-v1.5.7-to-KernelSU-Next-v1.0.7.patch || true
@@ -162,7 +161,7 @@ jobs:
            patch -p1 -F 3 < 69_hide_stuff.patch
            patch -p1 -F 3 < syscall_hooks.patch
            
-      - name: Apply new hook & Add configuration
+      - name: 🔧 Apply new hook & Add configuration (配置 一些内核开关)
         run: |
             cd kernel_workspace/kernel_platform
             echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -192,7 +191,7 @@ jobs:
             echo "CONFIG_TCP_CONG_HTCP=n" >> ./common/arch/arm64/configs/gki_defconfig
             sed -i 's/check_defconfig//' ./common/build.config.gki
          
-      - name: Build Kernel
+      - name: 🔨 Build Kernel (构建内核)
         run: |
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
@@ -205,7 +204,7 @@ jobs:
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
           fi
          
-      - name: Make AnyKernel3
+      - name: 📦 Package kernel to AnyKernel3 (打包内核到 AnyKernel3)
         run: |
           git clone https://github.com/Xiaomichael/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
@@ -244,14 +243,14 @@ jobs:
             exit 1
           fi
 
-      - name: Upload AnyKernel3 lz4 & zstd
+      - name: 📤 Upload AnyKernel3 lz4 & zstd (上传 AnyKernel3)
         if: ${{ github.event.inputs.KERNEL_VERSION == '6.1' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_KernelSU_Next_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: Upload AnyKernel3
+      - name: 📤 Upload AnyKernel3 (上传 AnyKernel3)
         if: ${{ github.event.inputs.KERNEL_VERSION != '6.1' }}
         uses: actions/upload-artifact@v4
         with:
