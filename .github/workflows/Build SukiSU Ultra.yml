@@ -8,6 +8,7 @@ on:
         type: choice
         options:
           - 'sm8650'
+          - 'sm8750'
           - 'sm8550'
           - 'sm8450'
           - 'sm8475'
@@ -19,6 +20,9 @@ on:
         type: choice
         options:
           - 'oneplus_12'
+          - 'oneplus_13'
+          - 'oneplus_13t'
+          - 'oneplus_ace5_pro'
           - 'oneplus_ace3_pro'
           - 'oneplus_ace5'
           - 'oneplus_pad2'
@@ -41,6 +45,7 @@ on:
         type: choice
         options:
           - 'pineapple'
+          - 'sun'
           - 'kalama'
           - 'waipio'
         default: 'pineapple'
@@ -50,6 +55,7 @@ on:
         type: choice
         options:
           - 'android14'
+          - 'android15'
           - 'android13'
           - 'android12'
         default: 'android14'
@@ -58,6 +64,7 @@ on:
         required: true
         type: choice
         options:
+          - '6.6'
           - '6.1'
           - '5.15'
           - '5.10'
@@ -163,7 +170,10 @@ jobs:
             cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./common/crypto
             cp -r ../SukiSU_patch/other/zram/lz4k_oplus ./common/lib/
           fi
-          
+          if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.6" ]; then
+            sed -i 's/-32,12 +32,38/-32,11 +32,37/g' 50_add_susfs_in_gki-android15-6.6.patch
+            sed -i '/#include <trace\/hooks\/fs.h>/d' 50_add_susfs_in_gki-android15-6.6.patch
+          fi
           cd ./common
           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
           cp ../../kernel_patches/69_hide_stuff.patch ./
@@ -175,7 +185,89 @@ jobs:
             cp ../../SukiSU_patch/other/zram/zram_patch/${{ github.event.inputs.KERNEL_VERSION }}/lz4k_oplus.patch ./
             patch -p1 -F 3 < lz4k_oplus.patch || true
           fi
-          
+
+      - name: 🔧 Apply HMBird GKI patch (配置6.6系的一些参数)
+        if: ${{ github.event.inputs.KERNEL_VERSION == '6.6' }}
+        run: |
+         cd kernel_workspace/kernel_platform/common/drivers
+         cat << 'EOF' > hmbird_patch.c
+         #include <linux/init.h>
+         #include <linux/module.h>
+         #include <linux/of.h>
+         #include <linux/slab.h>
+         #include <linux/string.h>
+
+         static int __init hmbird_patch_init(void)
+         {
+             struct device_node *ver_np;
+             const char *type;
+             int ret;
+
+             ver_np = of_find_node_by_path("/soc/oplus,hmbird/version_type");
+             if (!ver_np) {
+                  pr_info("hmbird_patch: version_type node not found\n");
+                  return 0;
+             }
+
+             ret = of_property_read_string(ver_np, "type", &type);
+             if (ret) {
+                  pr_info("hmbird_patch: type property not found\n");
+                  of_node_put(ver_np);
+                  return 0;
+             }
+
+             if (strcmp(type, "HMBIRD_OGKI")) {
+                  of_node_put(ver_np);
+                  return 0;
+             }
+
+             struct property *prop = of_find_property(ver_np, "type", NULL);
+             if (prop) {
+                  struct property *new_prop = kmalloc(sizeof(*prop), GFP_KERNEL);
+                  if (!new_prop) {
+                       pr_info("hmbird_patch: kmalloc for new_prop failed\n");
+                       of_node_put(ver_np);
+                       return 0;
+             }
+             memcpy(new_prop, prop, sizeof(*prop));
+             new_prop->value = kmalloc(strlen("HMBIRD_GKI") + 1, GFP_KERNEL);
+             if (!new_prop->value) {
+                  pr_info("hmbird_patch: kmalloc for new_prop->value failed\n");
+                  kfree(new_prop);
+                  of_node_put(ver_np);
+                  return 0;
+            }
+            strcpy(new_prop->value, "HMBIRD_GKI");
+            new_prop->length = strlen("HMBIRD_GKI") + 1;
+
+            if (of_remove_property(ver_np, prop) != 0) {
+                 pr_info("hmbird_patch: of_remove_property failed\n");
+                 return 0;
+            }
+            if (of_add_property(ver_np, new_prop) !=0) {
+                 pr_info("hmbird_patch: of_add_property failed\n");
+                 return 0;
+            }
+            pr_info("hmbird_patch: success from HMBIRD_OGKI to HMBIRD_GKI\n");
+         }
+         else {
+             pr_info("hmbird_patch: type property structure not found\n");
+         }
+         of_node_put(ver_np);
+         return 0;
+         }
+         early_initcall(hmbird_patch_init);
+         MODULE_LICENSE("GPL");
+         MODULE_AUTHOR("reigadegr");
+         MODULE_DESCRIPTION("Forcefully convert HMBIRD_OGKI to HMBIRD_GKI.");
+         EOF
+         if ! grep -q "hmbird_patch.o" Makefile; then
+         echo "obj-y += hmbird_patch.o" >> Makefile
+         fi
+         cd ../../../
+         git add -A
+         git commit -m "Add HMBird GKI patch" || true
+      
       - name: 🔧 Add sched_ext (配置 风驰内核驱动)
         run: |
          cd kernel_workspace/kernel_platform/
@@ -231,8 +323,12 @@ jobs:
           
       - name: 🔨 Build Kernel (构建内核)
         run: |
-          if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
-            export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
+          if [[ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1"] || ["${{ github.event.inputs.KERNEL_VERSION }}" == "6.6"]]; then
+            if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
+              export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
+            elif [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.6" ]; then
+              export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r510928/bin:$PATH"
+            fi
             export PATH="/usr/lib/ccache:$PATH"
             sudo apt install libelf-dev
             cd kernel_workspace/kernel_platform/common
@@ -251,6 +347,7 @@ jobs:
           dir3="kernel_workspace/kernel_platform/out/msm-${{ github.event.inputs.CPUD }}-${{ github.event.inputs.CPUD }}-gki/dist/"
           dir4="kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/gki_kernel/common/arch/arm64/boot/"
           dir5="kernel_workspace/kernel_platform/out/msm-${{ github.event.inputs.CPUD }}-${{ github.event.inputs.CPUD }}-gki/gki_kernel/common/arch/arm64/boot/"
+          dir6="kernel_workspace/kernel_platform/common/out/arch/arm64/boot/"
           target1="./AnyKernel3/"
           target2="./kernel_workspace/kernel"
 
@@ -264,6 +361,8 @@ jobs:
             image_path="$dir4"Image
           elif find "$dir5" -name "Image" | grep -q "Image"; then
             image_path="$dir5"Image
+          elif find "$dir6" -name "Image" | grep -q "Image"; then
+            image_path="$dir6"Image
           else
             image_path=$(find "./kernel_workspace/kernel_platform/common/out/" -name "Image" | head -n 1)
           fi
