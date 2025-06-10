@@ -8,7 +8,7 @@
 
 > [!TIP]
 > 
-> 目前``仅SukiSU支持`` ``一加6.6系``, 其他两个随缘更新
+> 一加6.6系列移步[```这里```](https://github.com/Xiaomichael/oneplus13_a5p_sukisu)
 > 
 > 食用方法：
 >
