@@ -236,6 +236,7 @@ jobs:
       - name: 🔨 Build Kernel (构建内核)
         run: |
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
+            cd kernel_workspace
             ./kernel_platform/build_with_bazel.py -t ${{ github.event.inputs.CPUD }} gki
             #export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
             #sudo apt install libelf-dev
