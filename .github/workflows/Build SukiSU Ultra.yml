@@ -311,7 +311,7 @@ jobs:
          path: ./AnyKernel3/*
          
       - name: 📝 Find zram (查找zram.ko并打包到模块)
-        if: ${{ github.event.inputs.ZRAM == 'true' }}
+        if: ${{ github.event.inputs.lz4kd == 'Open' }}
         run: |
           set -e
           sudo apt install -y unzip
