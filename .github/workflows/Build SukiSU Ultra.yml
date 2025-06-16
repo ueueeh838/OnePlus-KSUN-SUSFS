@@ -158,7 +158,7 @@ jobs:
           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
           if [ "${{ github.event.inputs.lz4kd }}" == "Close" ]; then
             cp ../kernel_patches/001-lz4.patch ./common/
-            cp ../kernel_patches/lz4armv8.S ./common/lib/lz4/
+            cp ../kernel_patches/lz4armv8.S ./common/lib
             cp ../kernel_patches/002-zstd.patch ./common/
           fi
           if [ "${{ github.event.inputs.lz4kd }}" == "Open" ]; then
