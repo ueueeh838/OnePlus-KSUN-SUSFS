@@ -69,7 +69,7 @@ on:
        options:
           - 'Open'
           - 'Close'
-       default: 'Open'
+       default: 'Close'
         
 jobs:
   build:
