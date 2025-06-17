@@ -8,7 +8,7 @@
 
 > [!TIP]
 > 
-> 一加6.6系列移步[```这里```](https://github.com/Xiaomichael/oneplus13_a5p_sukisu)
+> # 一加6.6系列移步[```这里```](https://github.com/Xiaomichael/oneplus13_a5p_sukisu)
 > 
 > 食用方法：
 >
