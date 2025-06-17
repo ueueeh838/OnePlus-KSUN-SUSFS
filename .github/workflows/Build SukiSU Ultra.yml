@@ -63,7 +63,7 @@ on:
           - '5.10'
         default: '6.1'
       lz4kd:
-       description: "是否启用lz4kd"
+       description: "是否启用lz4kd(关闭则启用lz4 + zstd)"
        required: true
        type: choice
        options:
