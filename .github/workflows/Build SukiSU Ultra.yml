@@ -156,7 +156,7 @@ jobs:
           cp ../kernel_patches/next/syscall_hooks.patch ./common/
           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
-          if [ "${{ github.event.inputs.lz4kd }}" == "Close" ]; then
+          if [ "${{ github.event.inputs.lz4kd }}" = "Close" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
             cp ../kernel_patches/001-lz4.patch ./common/
             cp ../kernel_patches/lz4armv8.S ./common/lib
             cp ../kernel_patches/002-zstd.patch ./common/
@@ -174,7 +174,7 @@ jobs:
           cp ../../kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
           patch -p1 -F 3 < syscall_hooks.patch
-          if [ "${{ github.event.inputs.lz4kd }}" == "Close" ]; then
+          if [ "${{ github.event.inputs.lz4kd }}" = "Close" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
             git apply -p1 < 001-lz4.patch || true
             patch -p1 < 002-zstd.patch || true
           fi
@@ -299,11 +299,18 @@ jobs:
          name: AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: 📤 Upload AnyKernel3 (上传 AnyKernel3)
-        if: ${{ github.event.inputs.lz4kd != 'Open' }}
+      - name: 📤 Upload AnyKernel3 with lz4 & zstd (上传 AnyKernel3)
+        if: ${{ github.event.inputs.lz4kd != 'Open' && github.event.inputs.KERNEL_VERSION == '6.1' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
+         path: ./AnyKernel3/*
+
+      - name: 📤 Upload AnyKernel3 (上传 AnyKernel3)
+        if: ${{ github.event.inputs.lz4kd != 'Open' && github.event.inputs.KERNEL_VERSION != '6.1' }}
+        uses: actions/upload-artifact@v4
+        with:
+         name: AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
       - name: 📝 Find zram.ko & crypto_zstdn.ko (查找 zram.ko & crypto_zstdn.ko)
