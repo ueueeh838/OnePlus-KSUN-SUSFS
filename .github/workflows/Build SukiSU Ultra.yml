@@ -234,7 +234,21 @@ jobs:
           fi
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
-          
+
+      - name: Enable lto=thin For FAST
+        if: ${{ github.event.inputs.KERNEL_VERSION == '6.1' }}
+        run: |
+          cd kernel_workspace/kernel_platform
+          DEFCONFIG=./common/arch/arm64/configs/gki_defconfig
+          echo "Enabling ThinLTO in $DEFCONFIG"
+          # 开启 CONFIG_LTO
+          sed -i 's/^CONFIG_LTO=n/CONFIG_LTO=y/' "$DEFCONFIG"
+          # 替换 FULL/NONE 为 THIN，防止冲突
+          sed -i 's/^CONFIG_LTO_CLANG_FULL=y/CONFIG_LTO_CLANG_THIN=y/' "$DEFCONFIG"
+          sed -i 's/^CONFIG_LTO_CLANG_NONE=y/CONFIG_LTO_CLANG_THIN=y/' "$DEFCONFIG"
+          # 添加 THIN（若未设置）
+          grep -q '^CONFIG_LTO_CLANG_THIN=y' "$DEFCONFIG" || echo 'CONFIG_LTO_CLANG_THIN=y' >> "$DEFCONFIG"
+    
       - name: 🔨 Build Kernel (构建内核)
         run: |
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
@@ -243,7 +257,7 @@ jobs:
             export PATH="/usr/lib/ccache:$PATH"
             sudo apt install libelf-dev
             cd kernel_workspace/kernel_platform/common
-            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out CONFIG_LTO_CLANG=y CONFIG_LTO_CLANG_THIN=y CONFIG_LTO_CLANG_FULL=n CONFIG_LTO_NONE=n gki_defconfig all
+            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld KCFLAGS+=-Wno-error O=out gki_defconfig all
           else
             cd kernel_workspace
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
