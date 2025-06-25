@@ -90,13 +90,12 @@ jobs:
       CCACHE_HARDLINK: "true"
       CCACHE_MAXSIZE: 8G
     steps:
-
       - name: 📊 Check disk space (构建前空间检查)
         run: df -h
 
       - name: ⚙️ Set cache environment (设置缓存环境)
         run: |
-          # 按机型隔离的缓存目录
+          # 创建按机型隔离的缓存目录
           echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}" >> $GITHUB_ENV
           mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}"
           echo "缓存目录设置为: $HOME/.ccache_${{ github.event.inputs.FEIL }}"
@@ -132,7 +131,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}-${{ hashFiles('.github/workflows/Build SukiSU Ultra.yml') }}
+          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}
           restore-keys: |
             ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-
             ccache-${{ runner.os }}-
@@ -272,26 +271,19 @@ jobs:
     
       - name: 🔨 Build Kernel (构建内核)
         run: |
+          export PATH="/usr/lib/ccache:$PATH"
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             export KBUILD_BUILD_TIMESTAMP="Wed May 29 07:25:40 UTC 2025"
             export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
-            export PATH="/usr/lib/ccache:$PATH"
             sudo apt install libelf-dev
             cd kernel_workspace/kernel_platform/common
             make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out CONFIG_LTO_CLANG=y CONFIG_LTO_CLANG_THIN=y CONFIG_LTO_CLANG_FULL=n CONFIG_LTO_NONE=n gki_defconfig all
           else
             cd kernel_workspace
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
+          fi
+          # 显示ccache统计信息
           ccache -s
-      
-      - name: 📤 Save ccache (保存 ccache 缓存)
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}-${{ hashFiles('.github/workflows/Build SukiSU Ultra.yml') }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-
-            ccache-${{ runner.os }}-
           
       - name: 📦 Package kernel to AnyKernel3 (打包内核到 AnyKernel3)
         run: |
