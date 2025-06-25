@@ -31,7 +31,7 @@ on:
           - 'oneplus_open'
           - 'oneplus_10t'
           - 'oneplus_11r'
-          - 'oneplus_ace2'
+          - 'oneplus_ace2_v'
           - 'oneplus_ace_pro'
           - 'oneplus_10_pro'
           - 'oneplus_ace_3v'
@@ -88,38 +88,73 @@ jobs:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
       CCACHE_HARDLINK: "true"
-      CCACHE_DIR: /home/runner/.ccache  
       CCACHE_MAXSIZE: 8G
     steps:
-      - name: 🚀 Maximize build space (最大化构建空间)
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 8192
-          temp-reserve-mb: 2048
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
+
+      - name: 📊 Check disk space (构建前空间检查)
+        run: df -h
+
+      - name: ⚙️ Set cache environment (设置缓存环境)
+        run: |
+          # 按机型隔离的缓存目录
+          echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}" >> $GITHUB_ENV
+          mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}"
+          echo "缓存目录设置为: $HOME/.ccache_${{ github.event.inputs.FEIL }}"
 
       - name: 📦 Configure Git (设置下载账户)
         run: |
          git config --global user.name "bulid"
          git config --global user.email "2210077278@qq.com"
 
+      - name: 🛠 Cache APT packages (缓存APT包)
+        uses: actions/cache@v3
+        with:
+          path: /var/lib/apt/lists
+          key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/Build SukiSU Ultra.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-
+
       - name: 📦 Install dependencies (安装依赖)
         run: |
-         sudo apt update && sudo apt upgrade -y
-         sudo apt install -y python3 git curl
-         sudo apt install -y python3 git curl ccache
-         
+          if [ ! -d "/var/lib/apt/lists" ] || [ -z "$(ls -A /var/lib/apt/lists)" ]; then
+            sudo apt update -qq
+          else
+            echo "使用缓存的APT列表"
+          fi
+          sudo apt install -y --no-install-recommends \
+            python3 git curl ccache libelf-dev \
+            build-essential flex bison libssl-dev \
+            libncurses-dev liblz4-tool zlib1g-dev \
+            libxml2-utils rsync unzip
+          ccache --version
+
       - name: 📥 Restore ccache (恢复 ccache 缓存)
         uses: actions/cache@v3
         with:
-          path: /home/runner/.ccache
-          key: ccache-${{ runner.os }}-${{ github.ref }}
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}-${{ hashFiles('.github/workflows/Build SukiSU Ultra.yml') }}
           restore-keys: |
+            ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-
             ccache-${{ runner.os }}-
-            
+
+      - name: 📥 Init ccache (初始化ccache缓存)
+        run: |
+          INIT_FLAG="${{ env.CCACHE_DIR }}/.ccache_initialized"
+          if command -v ccache >/dev/null 2>&1; then
+            if [ ! -f "$INIT_FLAG" ]; then
+              echo "初始化 ccache (${{ env.CCACHE_DIR }})..."
+              mkdir -p "${{ env.CCACHE_DIR }}"
+              ccache -M ${{ env.CCACHE_MAXSIZE }}
+              touch "$INIT_FLAG"
+              echo "ccache 初始化完成"
+            else
+              echo "ccache 已初始化，跳过"
+            fi
+          else
+            echo "未安装 ccache，跳过"
+          fi
+          ccache -s
+
       - name: 📥 Install repo tool (下载repo工具)
         run: |
          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
@@ -129,7 +164,7 @@ jobs:
       - name: 📥 Initialize repo and sync (克隆内核源码)
         run: |
          mkdir kernel_workspace && cd kernel_workspace
-         repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
+         repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
          repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
          rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
          rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
@@ -237,17 +272,26 @@ jobs:
     
       - name: 🔨 Build Kernel (构建内核)
         run: |
+          export PATH="/usr/lib/ccache:$PATH"
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             export KBUILD_BUILD_TIMESTAMP="Wed May 29 07:25:40 UTC 2025"
             export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
-            export PATH="/usr/lib/ccache:$PATH"
             sudo apt install libelf-dev
             cd kernel_workspace/kernel_platform/common
-            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out CONFIG_LTO_CLANG=y CONFIG_LTO_CLANG_THIN=y CONFIG_LTO_CLANG_FULL=n CONFIG_LTO_NONE=n gki_defconfig all
+            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out CONFIG_LTO_CLANG=y CONFIG_LTO_CLANG_THIN=y CONFIG_LTO_CLANG_FULL=n CONFIG_LTO_NONE=n gki_defconfig all
           else
             cd kernel_workspace
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
-          fi
+          ccache -s
+      
+      - name: 📤 Save ccache (保存 ccache 缓存)
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}-${{ hashFiles('.github/workflows/Build SukiSU Ultra.yml') }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-
+            ccache-${{ runner.os }}-
           
       - name: 📦 Package kernel to AnyKernel3 (打包内核到 AnyKernel3)
         run: |
@@ -336,3 +380,6 @@ jobs:
         with:
           name: zram.ko
           path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
+          
+      - name: 📊 Post-build disk check (构建后空间检查)
+        run: df -h
