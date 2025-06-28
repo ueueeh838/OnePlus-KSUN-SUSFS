@@ -384,5 +384,24 @@ jobs:
           name: zram.ko
           path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
           
+      - name: get bot script
+        uses: actions/checkout@v4
+        with:
+         path: bot
+      - name: Upload to telegram
+        run: |
+          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            zip -q -r "AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}.zip" ./AnyKernel3/*
+            pip3 install telethon
+            python3 ./bot/script/buildbot.py "./AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}.zip"
+          fi
+        env:
+          CHATID: ${{secrets.CHATID}}
+          BOT_TOKEN: ${{secrets.BOT_TOKEN}}
+          MESSAGE_THREAD_ID: ${{secrets.MESSAGE_THREAD_ID}}
+          KernelVer: ${{ github.event.inputs.ANDROID_VERSION}}-${{ github.event.inputs.KERNEL_VERSION }}
+          DEVICE: ${{ github.event.inputs.FEIL }}
+          KPM: ${{ github.event.inputs.KPM }}
+          LZ4KD: ${{ github.event.inputs.lz4kd }}
       - name: 📊 Post-build disk check (构建后空间检查)
         run: df -h
