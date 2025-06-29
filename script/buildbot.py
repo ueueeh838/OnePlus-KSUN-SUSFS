@@ -14,11 +14,13 @@ DEVICE = os.environ.get("DEVICE")
 kernelversion = os.environ.get("KernelVer")
 KPM= os.environ.get("KPM")
 lz4kd= os.environ.get("LZ4KD")
+ksuver= os.environ.get("KSUVERSIONS")
 MSG_TEMPLATE = """
 **New Build Published!**
 #{device}
-```
+```Kernel Info
 kernelver: {kernelversion}
+KsuVersion: {Ksuver}
 KPM: {kpm}
 Lz4kd: {Lz4kd}
 ```
@@ -32,6 +34,7 @@ def get_caption():
         kernelversion=kernelversion,
         kpm=KPM,
         Lz4kd=lz4kd,
+        Ksuver=ksuver,
     )
     if len(msg) > 1024:
         return f"{DEVICE}{kernelversion}"

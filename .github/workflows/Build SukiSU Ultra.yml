@@ -195,6 +195,9 @@ jobs:
           cd ./KernelSU
           KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10700)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
+          git fetch
+          KSY_VERSION_STR=$(git describe --tags $(git rev-list --tags --max-count=1))-$(git rev-parse --short HEAD)@$(git branch --show-current)
+          echo "KSUVER_STR=$KSY_VERSION_STR" >> $GITHUB_ENV
           export KSU_VERSION=$KSU_VERSION
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
           
@@ -388,6 +391,7 @@ jobs:
         uses: actions/checkout@v4
         with:
          path: bot
+
       - name: Upload to telegram
         run: |
           if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
@@ -403,5 +407,7 @@ jobs:
           DEVICE: ${{ github.event.inputs.FEIL }}
           KPM: ${{ github.event.inputs.KPM }}
           LZ4KD: ${{ github.event.inputs.lz4kd }}
+          KSUVERSIONS: ${{env.KSUVER_STR}}(${{env.KSUVER}})
+
       - name: 📊 Post-build disk check (构建后空间检查)
         run: df -h
