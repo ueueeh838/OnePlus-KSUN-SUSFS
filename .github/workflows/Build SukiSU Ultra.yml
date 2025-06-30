@@ -204,11 +204,11 @@ jobs:
           echo "KSU_API_VERSION=$KSU_API_VERSION" >> $GITHUB_ENV
           VERSION_DEFINITIONS=$(cat << EOF
           define get_ksu_version_full
-          v\\$1-xiaoxiaow
+          v\\$1-SukiSU-xiaoxiaow
           endef
       
           KSU_VERSION_API := $KSU_API_VERSION
-          KSU_VERSION_FULL := v$KSU_API_VERSION-xiaoxiaow
+          KSU_VERSION_FULL := v$KSU_API_VERSION-SukiSU-xiaoxiaow
           EOF
               )
           sed -i '/define get_ksu_version_full/,/endef/d' kernel/Makefile
