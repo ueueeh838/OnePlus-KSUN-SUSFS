@@ -20,6 +20,7 @@ kernelver: {kernelversion}
 KsuVersion: {Ksuver}
 KPM: {kpm}
 Lz4kd: {Lz4kd}
+lz4&zstd: {lz4_zstd}
 ```
 十分感谢yc佬对本自动推送bot做出的贡献❤️
 """.strip()
@@ -32,6 +33,7 @@ def get_caption():
         kpm=KPM,
         Lz4kd=lz4kd,
         Ksuver=ksuver,
+        lz4_zstd=check_lz4_zstd(),
     )
     if len(msg) > 1024:
         return f"{DEVICE}{kernelversion}"
@@ -91,6 +93,14 @@ def get_versions():
     os.chdir(os.getcwd()+"/../KernelSU")
     ksuver=os.popen("echo $(git describe --tags $(git rev-list --tags --max-count=1))-$(git rev-parse --short HEAD)@$(git branch --show-current)").read().strip()
     os.chdir(current_work)
+
+def check_lz4_zstd():
+    global lz4kd
+    if lz4kd == "Close":
+        return "Open"
+    else:
+        return "Close"
+    return "Close"
 
 async def main():
     print("[+] Uploading to telegram")
