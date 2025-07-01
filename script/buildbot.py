@@ -21,7 +21,7 @@ kernelver: {kernelversion}
 KsuVersion: {Ksuver}
 KPM: {kpm}
 lz4kd: {Lz4kd} lz4&zstd: {lz4_zstd}
-BBR: {bbr}
+BBR: {BBR}
 ```
 十分感谢yc佬对本自动推送bot做出的贡献❤️
 """.strip()
@@ -35,6 +35,7 @@ def get_caption():
         Lz4kd=lz4kd,
         Ksuver=ksuver,
         lz4_zstd=check_lz4_zstd(),
+        bbr=BBR,
     )
     if len(msg) > 1024:
         return f"{DEVICE}{kernelversion}"
