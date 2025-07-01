@@ -207,18 +207,18 @@ jobs:
           
       - name: ⚙️ Set SukiSU Ultra (设置SuKiSU Ultra)
         run: |
-          mkdir -p kernel_workspace/kernel_platform
-            cd kernel_workspace/kernel_platform
-            curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/setup.sh" | bash -s susfs-main
-            cd KernelSU
-            curl -L -o setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup.bin
-            chmod +x setup.bin
-            if [ ! -f "kernel/Makefile" ]; then
-              echo "::error ::kernel/Makefile"
-              ls -la
-              exit 1
-            fi
-            ./setup.bin
+         mkdir -p kernel_workspace/kernel_platform
+         cd kernel_workspace/kernel_platform
+         curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/setup.sh" | bash -s susfs-main
+         cd KernelSU
+         curl -L -o setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup.bin
+         chmod +x setup.bin
+         if [ ! -f "kernel/Makefile" ]; then
+           echo "::error ::kernel/Makefile"
+           ls -la
+           exit 1
+         fi
+         ./setup.bin
 
           
       - name: 🔧 Set up SUSFS (配置 SUSFS)
