@@ -100,8 +100,8 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - name: 📊 Check disk space (构建前空间检查)
-        run: df -h
+      #- name: 📊 Check disk space (构建前空间检查)
+      #  run: df -h
 
       - name: ⚙️ Set cache environment (设置缓存环境)
         run: |
@@ -444,5 +444,5 @@ jobs:
           LZ4KD: ${{ github.event.inputs.lz4kd }}
           KSUVERSIONS: ${{env.KSUVER_STR}}(${{env.KSUVER}})
 
-      - name: 📊 Post-build disk check (构建后空间检查)
-        run: df -h
+      #- name: 📊 Post-build disk check (构建后空间检查)
+      #  run: df -h
