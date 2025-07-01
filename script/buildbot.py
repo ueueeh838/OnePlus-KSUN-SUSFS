@@ -21,7 +21,7 @@ KsuVersion: {Ksuver}
 KPM: {kpm}
 Lz4kd: {Lz4kd}
 ```
-testing for auto push...
+十分感谢yc佬对本自动推送bot做出的贡献❤️
 """.strip()
 
 
