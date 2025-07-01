@@ -12,7 +12,6 @@ MESSAGE_THREAD_ID = os.environ.get("MESSAGE_THREAD_ID")
 DEVICE = os.environ.get("DEVICE")
 KPM= os.environ.get("KPM")
 lz4kd= os.environ.get("LZ4KD")
-BBR= os.environ.get("BBR")
 MSG_TEMPLATE = """
 **New Build Published!**
 #{device}
@@ -35,7 +34,6 @@ def get_caption():
         Lz4kd=lz4kd,
         Ksuver=ksuver,
         lz4_zstd=check_lz4_zstd(),
-        bbr=BBR,
     )
     if len(msg) > 1024:
         return f"{DEVICE}{kernelversion}"
