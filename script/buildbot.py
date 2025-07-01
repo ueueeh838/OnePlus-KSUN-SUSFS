@@ -20,7 +20,7 @@ MSG_TEMPLATE = """
 kernelver: {kernelversion}
 KsuVersion: {Ksuver}
 KPM: {kpm}
-lz4kd: {lz4kd} lz4&zstd: {lz4_zstd}
+lz4kd: {Lz4kd} lz4&zstd: {lz4_zstd}
 BBR: {BBR}
 ```
 十分感谢yc佬对本自动推送bot做出的贡献❤️
