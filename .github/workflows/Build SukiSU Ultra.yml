@@ -205,20 +205,21 @@ jobs:
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
           
-      - name: ⚙️ Set SuKiSU Ultra (设置SuKiSU Ultra)
+      - name: ⚙️ Set SukiSU Ultra (设置SuKiSU Ultra)
         run: |
           mkdir -p kernel_workspace/kernel_platform
-          cd kernel_workspace/kernel_platform
-          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/setup.sh" | bash -s susfs-main
-          cd KernelSU
-          cp /home/runner/work/OnePlus-Actions/script/setup.bin ./
-          chmod +x setup.bin
-          if [ ! -f "kernel/Makefile" ]; then
-            echo "::error ::kernel/Makefile"
-            ls -la
-            exit 1
-          fi
-          ./setup.bin
+            cd kernel_workspace/kernel_platform
+            curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/setup.sh" | bash -s susfs-main
+            cd KernelSU
+            cp "${GITHUB_WORKSPACE}/script/setup.bin" ./
+            chmod +x setup.bin
+            if [ ! -f "kernel/Makefile" ]; then
+              echo "::error ::kernel/Makefile"
+              ls -la
+              exit 1
+            fi
+            ./setup.bin
+
           
       - name: 🔧 Set up SUSFS (配置 SUSFS)
         run: |
