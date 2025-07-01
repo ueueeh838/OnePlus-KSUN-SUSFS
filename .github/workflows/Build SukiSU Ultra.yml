@@ -90,7 +90,7 @@ jobs:
       CCACHE_HARDLINK: "true"
       CCACHE_MAXSIZE: 8G
     steps:
-      - name: Maximize Build Space
+      - name: 🚀 Maximize build space (最大化构建空间)
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 8192
@@ -99,7 +99,6 @@ jobs:
           remove-android: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
-          remove-docker-images: 'true'
 
       - name: 📊 Check disk space (构建前空间检查)
         run: df -h
@@ -421,12 +420,12 @@ jobs:
           name: zram.ko
           path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
           
-      - name: get bot script
+      - name: 🔨 get bot script (获取 bot 脚本)
         uses: actions/checkout@v4
         with:
          path: bot
 
-      - name: Upload to telegram
+      - name: 📤 Upload to telegram (上传至Telegram群组)
         run: |
           if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
             cd AnyKernel3
