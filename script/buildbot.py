@@ -20,7 +20,6 @@ kernelver: {kernelversion}
 KsuVersion: {Ksuver}
 KPM: {kpm}
 lz4kd: {Lz4kd} lz4&zstd: {lz4_zstd}
-BBR: {bbr}
 ```
 十分感谢yc佬对本自动推送bot做出的贡献❤️
 """.strip()
