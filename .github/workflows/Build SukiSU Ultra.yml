@@ -1,4 +1,4 @@
-  name: Build OnePlus SukiSU Ultra
+name: Build OnePlus SukiSU Ultra
 on:
   workflow_dispatch:
     inputs:
@@ -87,8 +87,7 @@ on:
           - 'Open'
           - 'Close'
        default: 'Close'
-        
-        
+         
 jobs:
   build:
     name: For ${{ github.event.inputs.FEIL }} KPM ${{ github.event.inputs.KPM }} lz4kd ${{ github.event.inputs.lz4kd }} 
