@@ -211,7 +211,7 @@ jobs:
           cd kernel_workspace/kernel_platform
           curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/setup.sh" | bash -s susfs-main
           cd KernelSU
-          cp "https://github.com/Xiaomichael/OnePlus-Actions/blob/Build/script/setup.bin" ./
+          cp /home/runner/work/OnePlus-Actions/script/setup.bin ./
           chmod +x setup.bin
           if [ ! -f "kernel/Makefile" ]; then
             echo "::error ::kernel/Makefile"
