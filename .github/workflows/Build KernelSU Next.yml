@@ -143,7 +143,7 @@ jobs:
            git clone https://github.com/Xiaomichael/kernel_patches.git
            cd kernel_platform
            cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
-           cp ../kernel_patches/next/syscall_hooks.patch ./common/
+           cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./common/
            cp ../kernel_patches/next/0001-kernel-implement-susfs-v1.5.8-KernelSU-Next-v1.0.8.patch ./KernelSU-Next/
            if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
              cp ../kernel_patches/zram/001-lz4.patch ./common/
@@ -163,7 +163,7 @@ jobs:
            patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
            cp ../../kernel_patches/69_hide_stuff.patch ./
            patch -p1 -F 3 < 69_hide_stuff.patch
-           patch -p1 -F 3 < syscall_hooks.patch
+           patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
            
       - name: 🔧 Apply new hook & Add configuration (配置 一些内核开关)
         run: |
