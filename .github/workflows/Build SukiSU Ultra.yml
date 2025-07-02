@@ -118,12 +118,12 @@ jobs:
           mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}"
           echo "缓存目录设置为: $HOME/.ccache_${{ github.event.inputs.FEIL }}"
 
-      - name: 📦 Configure Git (设置下载账户)
+      - name: 🔐 Configure Git (设置下载账户)
         run: |
          git config --global user.name "bulid"
          git config --global user.email "2210077278@qq.com"
 
-      - name: 🛠 Configure APT caching (配置APT缓存)
+      - name: 📦 Configure APT caching (配置APT缓存)
         run: |
           APT_CACHE_DIR="$HOME/apt-cache"
           mkdir -p "$APT_CACHE_DIR"/{archives,lists/partial}
@@ -134,7 +134,7 @@ jobs:
           echo "Acquire::Languages \"none\";" | sudo tee -a /etc/apt/apt.conf.d/90user-cache
           sudo chown -R $USER:$USER "$APT_CACHE_DIR"
 
-      - name: 🛠 Cache APT packages (缓存APT包)
+      - name: 🔄 Cache APT packages (缓存APT包)
         uses: actions/cache@v3
         with:
           path: ${{ env.HOME }}/apt-cache
@@ -155,7 +155,7 @@ jobs:
             libxml2-utils rsync unzip
           echo "✅ 依赖安装完成"
 
-      - name: 📥 Restore ccache (恢复 ccache 缓存)
+      - name: 💾 Restore ccache (恢复 ccache 缓存)
         uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
@@ -164,7 +164,7 @@ jobs:
             ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-
             ccache-${{ runner.os }}-
 
-      - name: 📥 Init ccache (初始化ccache缓存)
+      - name: ⚙️ Init ccache (初始化ccache缓存)
         run: |
           INIT_FLAG="${{ env.CCACHE_DIR }}/.ccache_initialized"
           if command -v ccache >/dev/null 2>&1; then
@@ -188,7 +188,7 @@ jobs:
          chmod a+x ~/repo
          sudo mv ~/repo /usr/local/bin/repo
 
-      - name: 📥 Initialize repo and sync (克隆内核源码)
+      - name: ⬇️ Initialize repo and sync (克隆内核源码)
         run: |
          mkdir kernel_workspace && cd kernel_workspace
          repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
@@ -205,7 +205,7 @@ jobs:
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
           
-      - name: ⚙️ Set SukiSU Ultra (设置SuKiSU Ultra)
+      - name: ⚡ Set up SukiSU Ultra (配置SukiSU Ultra)
         run: |
          mkdir -p kernel_workspace/kernel_platform
          cd kernel_workspace/kernel_platform
@@ -219,7 +219,6 @@ jobs:
            exit 1
          fi
          ./setup.bin
-
           
       - name: 🔧 Set up SUSFS (配置 SUSFS)
         run: |
@@ -262,7 +261,7 @@ jobs:
             patch -p1 -F 3 < lz4k_oplus.patch || true
           fi
 
-      - name: 🔧 Apply new hook & Add configuration (配置 一些内核开关)
+      - name: ⚙️ Apply new hook & Add configuration (配置内核选项)
         run: |
           cd kernel_workspace/kernel_platform
           # Add KSU configuration settings
@@ -363,7 +362,7 @@ jobs:
             exit 1
           fi
          
-      - name: 🛠️ KPM Patching Image Files (KPM 修补 Image 文件)
+      - name: 🧩 KPM Patching Image Files (KPM 修补 Image 文件)
         if: ${{ github.event.inputs.KPM == 'Open' }}
         run: |
           cd kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist
@@ -409,7 +408,7 @@ jobs:
           name: zram.ko
           path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
           
-      - name: 🔨 get bot script (获取 bot 脚本)
+      - name: 🤖 get bot script (获取 bot 脚本)
         uses: actions/checkout@v4
         with:
          path: bot
