@@ -24,8 +24,9 @@
 >
 > ![image](https://github.com/user-attachments/assets/fc217103-24ef-45fa-a7e1-f13cfd64f771)
 >
-> 关于是否启用``lz4kd``, 我的评价是如果跑出来不报错就开着，开了会``省电`` + ``流畅``很多
+> 关于是否启用``lz4kd``, 我的评价是6.1系可以关闭那个选项获得更好的``lz4 + zstd``，但由于补丁只适用于6.1系，所以其他内核版本还是``开启lz4kd``
 >
 > 最后在运行时选择的配置就会如下
 >
->![image](https://github.com/user-attachments/assets/0526e42e-d8b1-480c-ae09-e05de1c4ccad)
+>![image](https://github.com/user-attachments/assets/b65809ad-efee-4cf5-a7a5-b3d97d93e034)
+
