@@ -97,8 +97,10 @@ jobs:
       CCACHE_NOHASHDIR: "true"
       CCACHE_HARDLINK: "true"
       CCACHE_MAXSIZE: 8G
+      
     steps:
-      - name: 🚀 Maximize build space (最大化构建空间)
+      # ====================== 系统初始化阶段 ======================
+      - name: "🚀 Maximize Build Space | 最大化构建空间"
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 8192
@@ -108,33 +110,36 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      #- name: 📊 Check disk space (构建前空间检查)
-      #  run: df -h
-
-      - name: ⚙️ Set cache environment (设置缓存环境)
+      - name: "⚙️ Setup Cache Env | 设置缓存环境"
         run: |
-          # 创建按机型隔离的缓存目录
+          echo "🔧 正在设置机型隔离缓存目录..."
           echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}" >> $GITHUB_ENV
           mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}"
-          echo "缓存目录设置为: $HOME/.ccache_${{ github.event.inputs.FEIL }}"
+          echo "✅ 缓存目录已设置: $HOME/.ccache_${{ github.event.inputs.FEIL }}"
 
-      - name: 🔐 Configure Git (设置下载账户)
+      - name: "🔐 Configure Git | 配置Git账户"
         run: |
-         git config --global user.name "bulid"
-         git config --global user.email "2210077278@qq.com"
+          echo "🔧 正在配置Git用户信息..."
+          git config --global user.name "build"
+          git config --global user.email "2210077278@qq.com"
+          echo "✅ Git配置完成"
 
-      - name: 📦 Configure APT caching (配置APT缓存)
+      # ====================== 依赖管理阶段 ======================
+      - name: "📦 Configure APT Cache | 配置APT缓存"
         run: |
+          echo "🔧 正在设置APT缓存目录..."
           APT_CACHE_DIR="$HOME/apt-cache"
           mkdir -p "$APT_CACHE_DIR"/{archives,lists/partial}
+          # 创建APT配置文件
           echo "Dir::Cache \"$APT_CACHE_DIR\";" | sudo tee /etc/apt/apt.conf.d/90user-cache
           echo "Dir::Cache::archives \"$APT_CACHE_DIR/archives\";" | sudo tee -a /etc/apt/apt.conf.d/90user-cache
           echo "Dir::State::lists \"$APT_CACHE_DIR/lists\";" | sudo tee -a /etc/apt/apt.conf.d/90user-cache
           echo "Acquire::Check-Valid-Until \"false\";" | sudo tee -a /etc/apt/apt.conf.d/90user-cache
           echo "Acquire::Languages \"none\";" | sudo tee -a /etc/apt/apt.conf.d/90user-cache
           sudo chown -R $USER:$USER "$APT_CACHE_DIR"
+          echo "✅ APT缓存配置完成"
 
-      - name: 🔄 Cache APT packages (缓存APT包)
+      - name: "📦 Restore APT Cache | 恢复APT缓存"
         uses: actions/cache@v3
         with:
           path: ${{ env.HOME }}/apt-cache
@@ -142,20 +147,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-apt-
 
-      - name: 🧰 Install dependencies (安装依赖)
+      - name: "📦 Install Dependencies | 安装构建依赖"
         run: |
+          echo "🔧 正在安装编译依赖项..."
           sudo rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock
           APT_CACHE_DIR="$HOME/apt-cache"
           mkdir -p "$APT_CACHE_DIR/lists/partial"
+          # 更新包列表并安装必要工具
           sudo apt -o Dir::Cache="$APT_CACHE_DIR" update -qq
           sudo DEBIAN_FRONTEND=noninteractive apt -o Dir::Cache="$APT_CACHE_DIR" install -yq --no-install-recommends \
             python3 git curl ccache libelf-dev \
             build-essential flex bison libssl-dev \
             libncurses-dev liblz4-tool zlib1g-dev \
             libxml2-utils rsync unzip
-          echo "✅ 依赖安装完成"
+          echo "✅ 所有依赖项已成功安装"
 
-      - name: 💾 Restore ccache (恢复 ccache 缓存)
+      # ====================== 缓存管理阶段 ======================
+      - name: "💾 Restore ccache | 恢复ccache缓存"
         uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
@@ -164,37 +172,45 @@ jobs:
             ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-
             ccache-${{ runner.os }}-
 
-      - name: ⚙️ Init ccache (初始化ccache缓存)
+      - name: "⚙️ Initialize ccache | 初始化ccache"
         run: |
+          echo "🔧 正在初始化ccache..."
           INIT_FLAG="${{ env.CCACHE_DIR }}/.ccache_initialized"
           if command -v ccache >/dev/null 2>&1; then
             if [ ! -f "$INIT_FLAG" ]; then
-              echo "初始化 ccache (${{ env.CCACHE_DIR }})..."
               mkdir -p "${{ env.CCACHE_DIR }}"
               ccache -M ${{ env.CCACHE_MAXSIZE }}
               touch "$INIT_FLAG"
-              echo "ccache 初始化完成"
+              echo "🆕 ccache初始化完成"
             else
-              echo "ccache 已初始化，跳过"
+              echo "ℹ️ ccache已存在，跳过初始化"
             fi
           else
-            echo "未安装 ccache，跳过"
+            echo "⚠️ 未找到ccache命令，跳过初始化"
           fi
+          # 显示缓存统计
           ccache -s
+          echo "✅ ccache初始化流程完成"
 
-      - name: 📥 Install repo tool (下载repo工具)
+      # ====================== 源码准备阶段 ======================
+      - name: "📥 Install Repo Tool | 安装Repo工具"
         run: |
-         curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
-         chmod a+x ~/repo
-         sudo mv ~/repo /usr/local/bin/repo
+          echo "⬇️ 正在下载repo工具..."
+          curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
+          chmod a+x ~/repo
+          sudo mv ~/repo /usr/local/bin/repo
+          echo "✅ repo工具安装完成"
 
-      - name: 🌐 Initialize repo and sync (克隆内核源码)
+      - name: "⬇️ Clone Kernel Source | 克隆内核源码"
         run: |
+         echo "🌐 正在初始化内核仓库..."
          mkdir kernel_workspace && cd kernel_workspace
          repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
+         echo "🔄 同步代码库(使用$(nproc --all)线程)..."
          repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
          rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
          rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
+         echo "✏️ 修改版本字符串设置..."
          sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
          sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
@@ -204,31 +220,39 @@ jobs:
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
+         echo "✅ 内核源码准备完成"
           
-      - name: ⚡ Set up SukiSU Ultra (配置SukiSU Ultra)
+      # ====================== 内核定制阶段 ======================
+      - name: "⚡ Setup SukiSU Ultra | 配置SukiSU Ultra"
         run: |
-         mkdir -p kernel_workspace/kernel_platform
-         cd kernel_workspace/kernel_platform
-         curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/setup.sh" | bash -s susfs-main
-         cd KernelSU
-         curl -L -o setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup.bin
-         chmod +x setup.bin
-         if [ ! -f "kernel/Makefile" ]; then
-           echo "::error ::kernel/Makefile"
-           ls -la
-           exit 1
-         fi
-         ./setup.bin
+          echo "🛠️ 正在设置SukiSU Ultra..."
+          mkdir -p kernel_workspace/kernel_platform
+          cd kernel_workspace/kernel_platform
+          # 下载并执行设置脚本
+          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/setup.sh" | bash -s susfs-main
+          cd KernelSU
+          echo "⬇️ 下载KernelSU设置工具..."
+          curl -L -o setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup.bin
+          chmod +x setup.bin
+          # 验证Makefile存在
+          if [ ! -f "kernel/Makefile" ]; then
+            echo "❌ 错误：缺少kernel/Makefile"
+            ls -la
+            exit 1
+          fi
+          ./setup.bin
+          echo "✅ SukiSU Ultra配置完成"
           
-      - name: 🔧 Set up SUSFS (配置 SUSFS)
+      - name: "🔧 Set up SUSFS | 配置 SUSFS"
         run: |
           cd kernel_workspace
+          echo "⬇️ 下载SUSFS补丁..."
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
           git clone https://github.com/Xiaomichael/kernel_patches.git
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
           git clone https://github.com/Lama3L9R/sukisu-quick-setup.git
           cd kernel_platform
-          # Copy SUSFS patches
+          echo "📝 复制补丁文件..."
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
           cp ../kernel_patches/next/syscall_hooks.patch ./common/
           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
@@ -245,16 +269,19 @@ jobs:
             cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./common/crypto
             cp -r ../SukiSU_patch/other/zram/lz4k_oplus ./common/lib/
           fi
+          echo "🔧 应用补丁..."
           cd ./common
           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
           cp ../../kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
           patch -p1 -F 3 < syscall_hooks.patch
           if [ "${{ github.event.inputs.lz4kd }}" = "Off" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
+            echo "📦 应用lz4+zstd补丁..."
             git apply -p1 < 001-lz4.patch || true
             patch -p1 < 002-zstd.patch || true
           fi
           if [ "${{ github.event.inputs.lz4kd }}" == "On" ]; then
+            echo "🚀 应用lz4kd补丁..."
             cp ../../SukiSU_patch/other/zram/zram_patch/${{ github.event.inputs.KERNEL_VERSION }}/lz4kd.patch ./
             patch -p1 -F 3 < lz4kd.patch || true
             cp ../../SukiSU_patch/other/zram/zram_patch/${{ github.event.inputs.KERNEL_VERSION }}/lz4k_oplus.patch ./
@@ -263,9 +290,11 @@ jobs:
           # Add support for zakosu
           # cp ../sukisu-quick-setup/patches/01-add-zakosu-manager.patch ./common/
           # patch -p1 -F 3 < 01-add-zakosu-manager.patch
+          echo "✅ 所有补丁应用完成"
 
-      - name: 🧵 Apply new hook & Add configuration (配置内核选项)
+      - name: "⚙️ Configure Kernel Options | 配置内核选项"
         run: |
+          echo "⚙️ 正在配置内核编译选项..."
           cd kernel_workspace/kernel_platform
           # Add KSU configuration settings
           echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -290,7 +319,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
           if [ "${{ github.event.inputs.bbr }}" == "On" ]; then
-            # Add BBR
+            echo "🌐 启用BBR网络算法..."
             echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -299,16 +328,18 @@ jobs:
             echo "CONFIG_TCP_CONG_HTCP=n" >> ./common/arch/arm64/configs/gki_defconfig
           fi
           if [ "${{ github.event.inputs.lz4kd }}" == "On" ]; then
-            # Add lz4kd
+            echo "📦 启用lz4kd压缩..."
             echo "CONFIG_CRYPTO_LZ4KD=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_CRYPTO_LZ4K_OPLUS=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_ZRAM_WRITEBACK=y" >> ./common/arch/arm64/configs/gki_defconfig
           fi
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
+          echo "✅ 内核配置更新完成"
     
-      - name: 🔨 Build Kernel (构建内核)
+      - name: "🔨 Build Kernel | 编译内核"
         run: |
+          echo "🏗️ 开始内核编译..."
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             export KBUILD_BUILD_TIMESTAMP="Wed May 29 07:25:40 UTC 2025"
             export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
@@ -322,9 +353,11 @@ jobs:
           fi
           # 显示ccache统计信息
           ccache -s
+          echo "✅ 内核编译完成"
           
-      - name: 📦 Package kernel to AnyKernel3 (打包内核到 AnyKernel3)
+      - name: "📦 Package Kernel | 打包内核"
         run: |
+          echo "📦 准备AnyKernel3打包环境..."
           git clone https://github.com/Xiaomichael/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
           dir1="kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/"
@@ -365,9 +398,10 @@ jobs:
             exit 1
           fi
          
-      - name: 🧩 KPM Patching Image Files (KPM 修补 Image 文件)
+      - name: "🧩 Patch Kernel Image (KPM) | KPM修补镜像"
         if: ${{ github.event.inputs.KPM == 'On' }}
         run: |
+          echo "🔧 正在应用KPM补丁..."
           cd kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist
           curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
           chmod +x patch_linux
@@ -376,54 +410,58 @@ jobs:
           mv oImage Image
           cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
           cp Image $GITHUB_WORKSPACE/kernel_workspace/kernel
-         
-      - name: 📤 Upload AnyKernel3 with lz4kd (上传 AnyKernel3)
+          echo "✅ KPM补丁应用完成"
+
+      # ====================== 上传阶段 ======================
+      - name: "📤 Upload AnyKernel3 with lz4kd | 上传 AnyKernel3"
         if: ${{ github.event.inputs.lz4kd == 'On' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: 📤 Upload AnyKernel3 with lz4 & zstd (上传 AnyKernel3)
+      - name: "📤 Upload AnyKernel3 with lz4 & zstd | 上传 AnyKernel3"
         if: ${{ github.event.inputs.lz4kd != 'On' && github.event.inputs.KERNEL_VERSION == '6.1' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
 
-      - name: 📤 Upload AnyKernel3 (上传 AnyKernel3)
+      - name: "📤 Upload AnyKernel3 | 上传 AnyKernel3"
         if: ${{ github.event.inputs.lz4kd != 'On' && github.event.inputs.KERNEL_VERSION != '6.1' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: 📝 Find zram.ko & crypto_zstdn.ko (查找 zram.ko & crypto_zstdn.ko)
+      - name: "📝 Find zram.ko & crypto_zstdn.ko | 查找 zram.ko & crypto_zstdn.ko"
         if: ${{ github.event.inputs.lz4kd == 'On' }}
         run: |
           find -name zram.ko
           find -name crypto_zstdn.ko
           
-      - name: 📤 Upload zram.ko (上传 zram.ko)
+      - name: "📤 Upload zram.ko | 上传 zram.ko"
         if: ${{ github.event.inputs.lz4kd == 'On' }}
         uses: actions/upload-artifact@v4
         with:
           name: zram.ko
           path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
           
-      - name: 🤖 get bot script (获取 bot 脚本)
+      - name: "🤖 Get bot script | 获取 bot 脚本"
         uses: actions/checkout@v4
         with:
          path: bot
 
-      - name: 📤 Upload to telegram (上传至Telegram群组)
+      - name: "📤 Upload to telegram | 上传至Telegram群组"
         run: |
           if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            echo "📤 正在上传到Telegram..."
             cd AnyKernel3
             zip -q -r "../AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}.zip" ./*
             cd ..
             pip3 install telethon
             python3 ./bot/script/buildbot.py "./AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}.zip"
+            echo "✅ 文件已上传到Telegram"
           fi
         env:
           CHATID: ${{secrets.CHATID}}
