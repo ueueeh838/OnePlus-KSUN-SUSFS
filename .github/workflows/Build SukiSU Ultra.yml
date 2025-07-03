@@ -72,7 +72,7 @@ on:
            - 'Off'
        default: 'On'
       lz4kd:
-       description: "是否启用lz4kd(关闭则6.1系列启用lz4 + zstd)"
+       description: "是否启用lz4kd(关闭则6.1系启用lz4 + zstd)"
        required: true
        type: choice
        options:
