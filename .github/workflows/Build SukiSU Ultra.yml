@@ -413,26 +413,22 @@ jobs:
           echo "✅ KPM补丁应用完成"
 
       # ====================== 上传阶段 ======================
-      - name: "📤 Upload AnyKernel3 with lz4kd | 上传 AnyKernel3"
-        if: ${{ github.event.inputs.lz4kd == 'On' }}
-        uses: actions/upload-artifact@v4
-        with:
-         name: AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
-         path: ./AnyKernel3/*
-         
-      - name: "📤 Upload AnyKernel3 with lz4 & zstd | 上传 AnyKernel3"
-        if: ${{ github.event.inputs.lz4kd != 'On' && github.event.inputs.KERNEL_VERSION == '6.1' }}
-        uses: actions/upload-artifact@v4
-        with:
-         name: AnyKernel3_SukiSU_Ultra_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
-         path: ./AnyKernel3/*
+      - name: "🧠 Set Artifact Name | 设置产物名称"
+        id: set_name
+        run: |
+          if [ "${{ github.event.inputs.lz4kd }}" = "On" ]; then
+            echo "ARTIFACT_NAME=AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
+            echo "ARTIFACT_NAME=AnyKernel3_SukiSU_Ultra_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
+          else
+            echo "ARTIFACT_NAME=AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: "📤 Upload AnyKernel3 | 上传 AnyKernel3"
-        if: ${{ github.event.inputs.lz4kd != 'On' && github.event.inputs.KERNEL_VERSION != '6.1' }}
         uses: actions/upload-artifact@v4
         with:
-         name: AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
-         path: ./AnyKernel3/*
+          name: ${{ steps.set_name.outputs.ARTIFACT_NAME }}
+          path: ./AnyKernel3/*
          
       - name: "📝 Find zram.ko & crypto_zstdn.ko | 查找 zram.ko & crypto_zstdn.ko"
         if: ${{ github.event.inputs.lz4kd == 'On' }}
@@ -457,10 +453,10 @@ jobs:
           if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
             echo "📤 正在上传到Telegram..."
             cd AnyKernel3
-            zip -q -r "../AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}.zip" ./*
+            zip -q -r "../${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip" ./*
             cd ..
             pip3 install telethon
-            python3 ./bot/script/buildbot.py "./AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}.zip"
+            python3 ./bot/script/buildbot.py "./${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip"
             echo "✅ 文件已上传到Telegram"
           fi
         env:
