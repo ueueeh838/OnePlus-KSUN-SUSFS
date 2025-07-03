@@ -68,25 +68,25 @@ on:
        required: true
        type: choice
        options:
-           - 'Open'
-           - 'Close'
-       default: 'Close'
+           - 'On'
+           - 'Off'
+       default: 'On'
       lz4kd:
        description: "是否启用lz4kd(关闭则6.1系列启用lz4 + zstd)"
        required: true
        type: choice
        options:
-          - 'Open'
-          - 'Close'
-       default: 'Close'
+          - 'On'
+          - 'Off'
+       default: 'Off'
       bbr:
        description: "是否启用bbr算法(优化上行数据, 对手机日用无太大意义甚至可能负优化)"
        required: true
        type: choice
        options:
-          - 'Open'
-          - 'Close'
-       default: 'Close'
+          - 'On'
+          - 'Off'
+       default: 'Off'
          
 jobs:
   build:
@@ -226,40 +226,43 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
           git clone https://github.com/Xiaomichael/kernel_patches.git
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
+          git clone https://github.com/Lama3L9R/sukisu-quick-setup.git
           cd kernel_platform
           # Copy SUSFS patches
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
           cp ../kernel_patches/next/syscall_hooks.patch ./common/
           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
-          if [ "${{ github.event.inputs.lz4kd }}" = "Close" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
+          if [ "${{ github.event.inputs.lz4kd }}" = "Off" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
             cp ../kernel_patches/zram/001-lz4.patch ./common/
             cp ../kernel_patches/zram/lz4armv8.S ./common/lib
             cp ../kernel_patches/zram/002-zstd.patch ./common/
           fi
-          if [ "${{ github.event.inputs.lz4kd }}" == "Open" ]; then
+          if [ "${{ github.event.inputs.lz4kd }}" == "On" ]; then
             # Copy lz4k from ShirkNeko
             cp -r ../SukiSU_patch/other/zram/lz4k/include/linux/* ./common/include/linux
             cp -r ../SukiSU_patch/other/zram/lz4k/lib/* ./common/lib
             cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./common/crypto
             cp -r ../SukiSU_patch/other/zram/lz4k_oplus ./common/lib/
           fi
-          
           cd ./common
           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
           cp ../../kernel_patches/69_hide_stuff.patch ./
           patch -p1 -F 3 < 69_hide_stuff.patch
           patch -p1 -F 3 < syscall_hooks.patch
-          if [ "${{ github.event.inputs.lz4kd }}" = "Close" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
+          if [ "${{ github.event.inputs.lz4kd }}" = "Off" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
             git apply -p1 < 001-lz4.patch || true
             patch -p1 < 002-zstd.patch || true
           fi
-          if [ "${{ github.event.inputs.lz4kd }}" == "Open" ]; then
+          if [ "${{ github.event.inputs.lz4kd }}" == "On" ]; then
             cp ../../SukiSU_patch/other/zram/zram_patch/${{ github.event.inputs.KERNEL_VERSION }}/lz4kd.patch ./
             patch -p1 -F 3 < lz4kd.patch || true
             cp ../../SukiSU_patch/other/zram/zram_patch/${{ github.event.inputs.KERNEL_VERSION }}/lz4k_oplus.patch ./
             patch -p1 -F 3 < lz4k_oplus.patch || true
           fi
+          # Add support for zakosu
+          cp ../sukisu-quick-setup/01-add-zakosu-manager.patch ./common/
+          patch -p1 -F 3 < 01-add-zakosu-manager.patch
 
       - name: ⚙️ Apply new hook & Add configuration (配置内核选项)
         run: |
@@ -286,7 +289,7 @@ jobs:
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
-          if [ "${{ github.event.inputs.bbr }}" == "Open" ]; then
+          if [ "${{ github.event.inputs.bbr }}" == "On" ]; then
             # Add BBR
             echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -295,7 +298,7 @@ jobs:
             echo "CONFIG_TCP_CONG_WESTWOOD=n" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_TCP_CONG_HTCP=n" >> ./common/arch/arm64/configs/gki_defconfig
           fi
-          if [ "${{ github.event.inputs.lz4kd }}" == "Open" ]; then
+          if [ "${{ github.event.inputs.lz4kd }}" == "On" ]; then
             # Add lz4kd
             echo "CONFIG_CRYPTO_LZ4KD=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_CRYPTO_LZ4K_OPLUS=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -363,7 +366,7 @@ jobs:
           fi
          
       - name: 🧩 KPM Patching Image Files (KPM 修补 Image 文件)
-        if: ${{ github.event.inputs.KPM == 'Open' }}
+        if: ${{ github.event.inputs.KPM == 'On' }}
         run: |
           cd kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist
           curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
@@ -375,34 +378,34 @@ jobs:
           cp Image $GITHUB_WORKSPACE/kernel_workspace/kernel
          
       - name: 📤 Upload AnyKernel3 with lz4kd (上传 AnyKernel3)
-        if: ${{ github.event.inputs.lz4kd == 'Open' }}
+        if: ${{ github.event.inputs.lz4kd == 'On' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
       - name: 📤 Upload AnyKernel3 with lz4 & zstd (上传 AnyKernel3)
-        if: ${{ github.event.inputs.lz4kd != 'Open' && github.event.inputs.KERNEL_VERSION == '6.1' }}
+        if: ${{ github.event.inputs.lz4kd != 'On' && github.event.inputs.KERNEL_VERSION == '6.1' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
 
       - name: 📤 Upload AnyKernel3 (上传 AnyKernel3)
-        if: ${{ github.event.inputs.lz4kd != 'Open' && github.event.inputs.KERNEL_VERSION != '6.1' }}
+        if: ${{ github.event.inputs.lz4kd != 'On' && github.event.inputs.KERNEL_VERSION != '6.1' }}
         uses: actions/upload-artifact@v4
         with:
          name: AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
       - name: 📝 Find zram.ko & crypto_zstdn.ko (查找 zram.ko & crypto_zstdn.ko)
-        if: ${{ github.event.inputs.lz4kd == 'Open' }}
+        if: ${{ github.event.inputs.lz4kd == 'On' }}
         run: |
           find -name zram.ko
           find -name crypto_zstdn.ko
           
       - name: 📤 Upload zram.ko (上传 zram.ko)
-        if: ${{ github.event.inputs.lz4kd == 'Open' }}
+        if: ${{ github.event.inputs.lz4kd == 'On' }}
         uses: actions/upload-artifact@v4
         with:
           name: zram.ko
