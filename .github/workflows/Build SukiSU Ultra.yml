@@ -261,7 +261,7 @@ jobs:
             patch -p1 -F 3 < lz4k_oplus.patch || true
           fi
           # Add support for zakosu
-          cp ../sukisu-quick-setup/01-add-zakosu-manager.patch ./common/
+          cp ../sukisu-quick-setup/patches/01-add-zakosu-manager.patch ./common/
           patch -p1 -F 3 < 01-add-zakosu-manager.patch
 
       - name: ⚙️ Apply new hook & Add configuration (配置内核选项)
