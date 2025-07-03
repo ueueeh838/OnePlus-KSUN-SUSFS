@@ -333,12 +333,8 @@ jobs:
             echo "CONFIG_CRYPTO_LZ4K_OPLUS=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_ZRAM_WRITEBACK=y" >> ./common/arch/arm64/configs/gki_defconfig
           fi
-          # Add O2 and LTO config
+          # Add O2 config
           echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_LTO_CLANG=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_LTO_CLANG_THIN=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_LTO_CLANG_FULL=n" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_LTO_NONE=n" >> ./common/arch/arm64/configs/gki_defconfig
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
           echo "✅ 内核配置更新完成"
