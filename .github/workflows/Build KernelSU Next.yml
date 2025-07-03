@@ -75,7 +75,8 @@ jobs:
       CCACHE_DIR: /home/runner/.ccache  
       CCACHE_MAXSIZE: 8G
     steps:
-      - name: 🚀 Maximize build space (最大化构建空间)
+      # ====================== 系统初始化阶段 ======================
+      - name: "🚀 Maximize Build Space | 最大化构建空间"
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 8192
@@ -85,18 +86,23 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           
-      - name: 📦 Configure Git (设置下载账户)
+      - name: "🔐 Configure Git | 配置Git账户"
         run: |
-         git config --global user.name "build"
-         git config --global user.email "2210077278@qq.com"
+          echo "🔧 正在配置Git用户信息..."
+          git config --global user.name "build"
+          git config --global user.email "2210077278@qq.com"
+          echo "✅ Git配置完成"
 
-      - name: 📦 Install dependencies (安装依赖)
+      - name: "📦 Install Dependencies | 安装构建依赖"
         run: |
+         echo "🔧 正在安装编译依赖项..."
          sudo apt update && sudo apt upgrade -y
          sudo apt install -y python3 git curl
          sudo apt install -y python3 git curl ccache
+         echo "✅ 所有依赖项已成功安装"
          
-      - name: 📥 Restore ccache (恢复 ccache 缓存)
+      # ====================== 缓存管理阶段 ======================
+      - name: "💾 Restore ccache | 恢复ccache缓存"
         uses: actions/cache@v3
         with:
           path: /home/runner/.ccache
@@ -104,19 +110,25 @@ jobs:
           restore-keys: |
             ccache-${{ runner.os }}-
 
-      - name: 📥 Install repo tool (下载repo工具)
+      # ====================== 源码准备阶段 ======================
+      - name: "📥 Install Repo Tool | 安装Repo工具"
         run: |
-         curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
-         chmod a+x ~/repo
-         sudo mv ~/repo /usr/local/bin/repo
+          echo "⬇️ 正在下载repo工具..."
+          curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
+          chmod a+x ~/repo
+          sudo mv ~/repo /usr/local/bin/repo
+          echo "✅ repo工具安装完成"
 
-      - name: 📥 Initialize repo and sync (克隆内核源码)
+      - name: "⬇️ Clone Kernel Source | 克隆内核源码"
         run: |
+         echo "🌐 正在初始化内核仓库..."
          mkdir kernel_workspace && cd kernel_workspace
          repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
+         echo "🔄 同步代码库(使用$(nproc --all)线程)..."
          repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
          rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
          rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
+         echo "✏️ 修改版本字符串设置..."
          sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
          sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
@@ -126,8 +138,10 @@ jobs:
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
          sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
-         
-      - name: ⚙️ Set up KernelSU Next (配置 KernelSU Next)
+         echo "✅ 内核源码准备完成"
+
+      # ====================== 内核定制阶段 ======================
+      - name: "⚡ Setup KernelSU Next | 配置 KernelSU Next"
         run: |
          cd kernel_workspace/kernel_platform
          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
@@ -136,12 +150,14 @@ jobs:
          echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
          sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
         
-      - name: 🔧 Set up SUSFS (配置 SUSFS)
+      - name: "🔧 Set up SUSFS | 配置 SUSFS"
         run: |
            cd kernel_workspace
+           echo "⬇️ 下载SUSFS补丁..."
            git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
            git clone https://github.com/Xiaomichael/kernel_patches.git
            cd kernel_platform
+           echo "📝 复制补丁文件..."
            cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
            cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./common/
            cp ../kernel_patches/next/0001-kernel-implement-susfs-v1.5.8-KernelSU-Next-v1.0.8.patch ./KernelSU-Next/
@@ -155,8 +171,10 @@ jobs:
            # Apply patches
            cd ./KernelSU-Next
            patch -p1 < --forward < 0001-kernel-implement-susfs-v1.5.8-KernelSU-Next-v1.0.8.patch || true
+           echo "🔧 应用补丁..."
            cd ../common
            if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
+             echo "📦 应用lz4+zstd补丁..."
              git apply -p1 < 001-lz4.patch || true
              patch -p1 < 002-zstd.patch || true
            fi
@@ -164,9 +182,11 @@ jobs:
            cp ../../kernel_patches/69_hide_stuff.patch ./
            patch -p1 -F 3 < 69_hide_stuff.patch
            patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
+           echo "✅ 所有补丁应用完成"
            
-      - name: 🔧 Apply new hook & Add configuration (配置 一些内核开关)
+      - name: "⚙️ Configure Kernel Options | 配置内核选项"
         run: |
+            echo "⚙️ 正在配置内核编译选项..."
             cd kernel_workspace/kernel_platform
             # Add KSU configuration settings
             echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -189,6 +209,7 @@ jobs:
             echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
             # Add BBR
+            echo "🌐 启用BBR网络算法..."
             echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -196,22 +217,25 @@ jobs:
             echo "CONFIG_TCP_CONG_WESTWOOD=n" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_TCP_CONG_HTCP=n" >> ./common/arch/arm64/configs/gki_defconfig
             sed -i 's/check_defconfig//' ./common/build.config.gki
+            echo "✅ 内核配置更新完成"
          
-      - name: 🔨 Build Kernel (构建内核)
+      - name: "🔨 Build Kernel | 编译内核"
         run: |
+          echo "🏗️ 开始内核编译..."
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             export KBUILD_BUILD_TIMESTAMP="Wed May 29 07:25:40 UTC 2025"
             export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
             export PATH="/usr/lib/ccache:$PATH"
             sudo apt install libelf-dev
             cd kernel_workspace/kernel_platform/common
-            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out CONFIG_LTO_CLANG=y CONFIG_LTO_CLANG_THIN=y CONFIG_LTO_CLANG_FULL=n CONFIG_LTO_NONE=n gki_defconfig all
+            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out CONFIG_LTO_CLANG=y CONFIG_LTO_CLANG_THIN=y CONFIG_LTO_CLANG_FULL=n CONFIG_LTO_NONE=n gki_defconfig all
           else
             cd kernel_workspace
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
           fi
+          echo "✅ 内核编译完成"
          
-      - name: 📦 Package kernel to AnyKernel3 (打包内核到 AnyKernel3)
+      - name: "📦 Package Kernel | 打包内核"
         run: |
           git clone https://github.com/Xiaomichael/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
@@ -252,7 +276,8 @@ jobs:
             echo "未找到 Image 文件，构建可能失败"
             exit 1
           fi
-
+          
+      # ====================== 上传阶段 ======================
       - name: 📤 Upload AnyKernel3 lz4 & zstd (上传 AnyKernel3)
         if: ${{ github.event.inputs.KERNEL_VERSION == '6.1' }}
         uses: actions/upload-artifact@v4
@@ -260,7 +285,7 @@ jobs:
          name: AnyKernel3_KernelSU_Next_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: ./AnyKernel3/*
          
-      - name: 📤 Upload AnyKernel3 (上传 AnyKernel3)
+      - name: "📤 Upload AnyKernel3 | 上传 AnyKernel3"
         if: ${{ github.event.inputs.KERNEL_VERSION != '6.1' }}
         uses: actions/upload-artifact@v4
         with:
