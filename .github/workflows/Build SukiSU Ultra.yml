@@ -265,7 +265,7 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
           git clone https://github.com/Xiaomichael/kernel_patches.git
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
-          git clone https://github.com/Lama3L9R/sukisu-quick-setup.
+          git clone https://github.com/Lama3L9R/sukisu-quick-setup.git
           
           cd kernel_platform
           echo "📝 复制补丁文件..."
