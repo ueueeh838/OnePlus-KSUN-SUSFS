@@ -275,9 +275,9 @@ jobs:
           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
           
           if [ "${{ github.event.inputs.lz4kd }}" = "Off" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
-            # cp ../kernel_patches/zram/001-lz4.patch ./common/
-            # cp ../kernel_patches/zram/lz4armv8.S ./common/lib
-            cp ../kernel_patches/zram/lz4-oneplus.patch ./common/
+            cp ../kernel_patches/zram/001-lz4.patch ./common/
+            cp ../kernel_patches/zram/lz4armv8.S ./common/lib
+            # cp ../kernel_patches/zram/lz4-oneplus.patch ./common/
             cp ../kernel_patches/zram/002-zstd.patch ./common/
           fi
           
@@ -298,8 +298,8 @@ jobs:
           
           if [ "${{ github.event.inputs.lz4kd }}" = "Off" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
             echo "📦 应用lz4+zstd补丁..."
-            # git apply -p1 < 001-lz4.patch || true
-            patch -p1 < lz4-oneplus.patch || true
+            git apply -p1 < 001-lz4.patch || true
+            # patch -p1 < lz4-oneplus.patch || true
             patch -p1 < 002-zstd.patch || true
           fi
           
