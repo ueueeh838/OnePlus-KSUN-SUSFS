@@ -35,6 +35,8 @@ on:
           - 'oneplus_ace_pro'
           - 'oneplus_10_pro'
           - 'oneplus_ace_3v'
+          - 'onrplus_nord_4'
+          - 'oneplus_nord_ce4'
         default: 'oneplus_12'
       CPUD:
         description: "处理器代号"
@@ -44,6 +46,7 @@ on:
           - 'pineapple'
           - 'kalama'
           - 'waipio'
+          - 'crow'
         default: 'pineapple'
       ANDROID_VERSION:
         description: "内核安卓版本"
