@@ -424,39 +424,32 @@ jobs:
       - name: "🔨 Build Kernel | 编译内核"
         run: |
           echo "🏗️ 开始内核编译..."
-          # 设置通用环境变量
-          export PATH="/usr/lib/ccache:$PATH"
-          export RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc
-          export PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole
-          export LD=ld.lld
-          export HOSTLD=ld.lld
-          export CC="ccache clang"
-          export ARCH=arm64
-          export CROSS_COMPILE=aarch64-linux-gnu-
-          # 安装依赖
-          sudo apt install -y libelf-dev
-          # 选择不同版本内核配置
-          cd kernel_workspace/kernel_platform/common
-          case "${{ github.event.inputs.KERNEL_VERSION }}" in
-            "6.1")
-              export KBUILD_BUILD_TIMESTAMP="Wed May 29 07:25:40 UTC 2025"
-              export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
-              ;;
-            "5.15")
-              export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r450784e/bin:$PATH"
-              ;;
-            "5.10")
-              export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts-master/clang/host/linux-x86/clang-r416183b/bin:$PATH"
-              export LLVM_IAS=1
-              ;;
-            *)
-              echo "❌ 不支持的内核版本: ${{ github.event.inputs.KERNEL_VERSION }}"
-              exit 1
-              ;;
-          esac
-          # 执行编译
-          make -j$(nproc --all) LLVM=1 O=out KCFLAGS+=-O2 gki_defconfig all
-          # 显示 ccache 使用情况
+          if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
+            export KBUILD_BUILD_TIMESTAMP="Wed May 29 07:25:40 UTC 2025"
+            export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
+            export PATH="/usr/lib/ccache:$PATH"
+            sudo apt install libelf-dev
+            cd kernel_workspace/kernel_platform/common
+            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out KCFLAGS+=-O2 gki_defconfig all
+          elif [ "${{ github.event.inputs.KERNEL_VERSION }}" == "5.15" ]; then
+            echo "🏗️ 开始内核编译..."
+            export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r450784e/bin:$PATH"
+            export PATH="/usr/lib/ccache:$PATH"
+            sudo apt install libelf-dev
+            cd kernel_workspace/kernel_platform/common
+            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out KCFLAGS+=-O2 gki_defconfig all
+          elif [ "${{ github.event.inputs.KERNEL_VERSION }}" == "5.10" ]; then
+            echo "🏗️ 开始内核编译..."
+            export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts-master/clang/host/linux-x86/clang-r416183b/bin:$PATH"
+            export PATH="/usr/lib/ccache:$PATH"
+            sudo apt install libelf-dev
+            cd kernel_workspace/kernel_platform/common
+            make -j$(nproc --all) LLVM_IAS=1 LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out KCFLAGS+=-O2 gki_defconfig all
+          # else
+            # cd kernel_workspace
+            # LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
+          fi
+          # 显示ccache统计信息
           ccache -s
           echo "✅ 内核编译完成"
           
