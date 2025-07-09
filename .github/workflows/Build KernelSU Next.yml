@@ -281,16 +281,18 @@ jobs:
           fi
           
       # ====================== 上传阶段 ======================
-      - name: 📤 Upload AnyKernel3 lz4 & zstd (上传 AnyKernel3)
-        if: ${{ github.event.inputs.KERNEL_VERSION == '6.1' }}
-        uses: actions/upload-artifact@v4
-        with:
-         name: AnyKernel3_KernelSU_Next_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
-         path: ./AnyKernel3/*
+      - name: "🧠 Set Artifact Name | 设置产物名称"
+        id: set_name
+        run: |
+          if [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
+            echo "ARTIFACT_NAME=AnyKernel3_KernelSU_Next_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
+          else
+            echo "ARTIFACT_NAME=AnyKernel3_KernelSU_Next_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
+          fi
          
       - name: "📤 Upload AnyKernel3 | 上传 AnyKernel3"
         if: ${{ github.event.inputs.KERNEL_VERSION != '6.1' }}
         uses: actions/upload-artifact@v4
         with:
-         name: AnyKernel3_KernelSU_Next_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
+         name: ${{ steps.set_name.outputs.ARTIFACT_NAME }}
          path: ./AnyKernel3/*
