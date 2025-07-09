@@ -209,15 +209,15 @@ jobs:
            echo "🔧 应用补丁..."
            # Apply patches
            cd ./KernelSU-Next
-           cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+           cp ./susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
            patch -p1 --forward --fuzz=3 < 10_enable_susfs_for_ksu.patch || true     
-           cp ../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
+           cp ./kernel_patches/next/susfs_fix_patches/v1.5.9/fix_apk_sign.c.patch ./
            patch -p1 --forward --fuzz=3 < fix_apk_sign.c.patch     
-           cp ../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+           cp ./kernel_patches/next/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
            patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch        
-           cp ../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_selinux.c.patch ./
+           cp ./kernel_patches/next/susfs_fix_patches/v1.5.9/fix_selinux.c.patch ./
            patch -p1 --forward --fuzz=3 < fix_selinux.c.patch         
-           cp ../kernel_patches/next/susfs_fix_patches/v1.5.9/fix_ksud.c.patch ./
+           cp ./kernel_patches/next/susfs_fix_patches/v1.5.9/fix_ksud.c.patch ./
            patch -p1 --forward --fuzz=3 < fix_ksud.c.patch
            cd ../common
            if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
