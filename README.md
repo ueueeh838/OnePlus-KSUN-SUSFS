@@ -44,4 +44,4 @@
 
 ## 运行时配置示例
 
-![运行时配置示例](https://github.com/user-attachments/assets/3c7425b5-2848-452f-8a61-d2d0733d6802)
+![{BF5F0169-D752-481A-BA95-FCDD8483A359}](https://github.com/user-attachments/assets/8f875661-3955-46c4-b65c-06f40afbc122)
