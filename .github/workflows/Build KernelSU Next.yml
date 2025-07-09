@@ -2,6 +2,7 @@ name: Build OnePlus KernelSU Next
 on:
   workflow_dispatch:
     inputs:
+    
       CPU:
         description: "CPU分支"
         required: true
@@ -13,6 +14,7 @@ on:
           - 'sm8475'
           - 'sm7675'
         default: 'sm8650'
+        
       FEIL:
         description: "手机型号"
         required: true
@@ -38,6 +40,7 @@ on:
           - 'onrplus_nord_4'
           - 'oneplus_nord_ce4'
         default: 'oneplus_12'
+        
       CPUD:
         description: "处理器代号"
         required: true
@@ -48,6 +51,7 @@ on:
           - 'waipio'
           - 'crow'
         default: 'pineapple'
+        
       ANDROID_VERSION:
         description: "内核安卓版本"
         required: true
@@ -57,6 +61,7 @@ on:
           - 'android13'
           - 'android12'
         default: 'android14'
+        
       KERNEL_VERSION:
         description: "内核版本"
         required: true
@@ -77,6 +82,7 @@ jobs:
       CCACHE_HARDLINK: "true"
       CCACHE_DIR: /home/runner/.ccache  
       CCACHE_MAXSIZE: 8G
+      
     steps:
       # ====================== 系统初始化阶段 ======================
       - name: "🚀 Maximize Build Space | 最大化构建空间"
@@ -321,7 +327,6 @@ jobs:
           fi
          
       - name: "📤 Upload AnyKernel3 | 上传 AnyKernel3"
-        if: ${{ github.event.inputs.KERNEL_VERSION != '6.1' }}
         uses: actions/upload-artifact@v4
         with:
          name: ${{ steps.set_name.outputs.ARTIFACT_NAME }}
