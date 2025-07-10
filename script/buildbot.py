@@ -22,6 +22,7 @@ KPM: {kpm}
 lz4kd: {Lz4kd} lz4&zstd: {lz4_zstd}
 ```
 十分感谢yc佬对本自动推送bot做出的贡献❤️
+Please Join Our Group! tg @gki_kernels_xiaoxiaow
 """.strip()
 
 
