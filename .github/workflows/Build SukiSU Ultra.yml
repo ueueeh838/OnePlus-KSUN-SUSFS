@@ -562,6 +562,7 @@ jobs:
             EOF
 
       - name: "📤 Upload to telegram | 上传至Telegram群组"
+        if: ! -z "${{ secrets.BOT_TOKEN }}" 
         uses: puernya/tg-bot-upload@v1
         with:
           bot-id: ${{ secrets.BOT_TOKEN }}
@@ -570,5 +571,30 @@ jobs:
           file-path: "${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip"
           caption-path: release.txt
 
+      # - name: "🤖 Get bot script | 获取 bot 脚本"
+        # uses: actions/checkout@v4
+        # with:
+         # path: bot
+
+      # - name: "📤 Upload to telegram | 上传至Telegram群组"
+        # run: |
+          # if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            # echo "📤 正在上传到Telegram..."
+            # cd AnyKernel3
+            # zip -q -r "../${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip" ./*
+            # cd ..
+            # pip3 install telethon
+            # python3 ./bot/script/buildbot.py "./${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip"
+            # echo "✅ 文件已上传到Telegram"
+          # fi
+        # env:
+          # CHATID: ${{secrets.CHATID}}
+          # BOT_TOKEN: ${{secrets.BOT_TOKEN}}
+          # MESSAGE_THREAD_ID: ${{secrets.MESSAGE_THREAD_ID}}
+          # KernelVer: ${{ github.event.inputs.ANDROID_VERSION}}-${{ github.event.inputs.KERNEL_VERSION }}
+          # DEVICE: ${{ github.event.inputs.FEIL }}
+          # KPM: ${{ github.event.inputs.KPM }}
+          # LZ4KD: ${{ github.event.inputs.lz4kd }}
+          # KSUVERSIONS: ${{env.KSUVER_STR}}(${{env.KSUVER}})
       #- name: 📊 Post-build disk check (构建后空间检查)
       #  run: df -h
