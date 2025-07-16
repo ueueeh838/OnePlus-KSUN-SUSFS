@@ -1,5 +1,5 @@
 #!/bin/bash
-export all_proxy=socks5://192.168.2.25:10810
+#export all_proxy=socks5://192.168.2.25:10810
 set -e # Exit immediately if a command exits with a non-zero status.
 
 # =================================================================
@@ -133,7 +133,6 @@ cd $WORKSPACE_DIR/kernel_workspace
 git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-"$ANDROID_VERSION"-"$KERNEL_VERSION"
 git clone https://github.com/Xiaomichael/kernel_patches.git
 git clone https://github.com/ShirkNeko/SukiSU_patch.git
-git clone https://github.com/Lama3L9R/sukisu-quick-setup.git
 
 cd $WORKSPACE_DIR/kernel_workspace/kernel_platform
 log "📝 Copying patch files..."
@@ -143,9 +142,9 @@ cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
 cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 
 if [ "$LZ4KD" = "Off" ] && [ "$KERNEL_VERSION" = "6.1" ]; then
-    cp ../kernel_patches/zram/001-lz4.patch ./common/
-    cp ../kernel_patches/zram/lz4armv8.S ./common/lib
-    cp ../kernel_patches/zram/002-zstd.patch ./common/
+    #cp ../kernel_patches/zram/001-lz4.patch ./common/
+    #cp ../kernel_patches/zram/lz4armv8.S ./common/lib
+    #cp ../kernel_patches/zram/002-zstd.patch ./common/
 fi
 
 if [ "$LZ4KD" == "On" ]; then
