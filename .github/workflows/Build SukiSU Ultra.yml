@@ -236,9 +236,9 @@ jobs:
          repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
          
          echo "⬇️ 下载内核设置工具..."
-         curl -L -o setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup.bin
-         chmod +x setup.bin
-         ./setup.bin
+         curl -L -o setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup_kernel.bin
+         chmod +x setup_kernel.bin
+         ./setup_kernel.bin
          echo "✅ 内核配置完成"
       # ====================== 内核定制阶段 ======================
       - name: "⚡ Setup SukiSU Ultra | 配置SukiSU Ultra"
