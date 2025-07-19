@@ -169,7 +169,7 @@ jobs:
          echo "🔄 同步代码库(使用$(nproc --all)线程)..."
          repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
          echo "⬇️ 下载内核设置工具..."
-         curl -L -o setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup_kernel.bin
+         curl -L -o setup_kernel.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup_kernel.bin
          chmod +x setup_kernel.bin
          ./setup_kernel.bin
          echo "✅ 内核配置完成"
