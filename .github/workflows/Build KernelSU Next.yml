@@ -168,19 +168,11 @@ jobs:
          repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
          echo "🔄 同步代码库(使用$(nproc --all)线程)..."
          repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
-         rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
-         rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
-         echo "✏️ 修改版本字符串设置..."
-         sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
-         sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
-         sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
-         sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/common/scripts/setlocalversion
-         sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/msm-kernel/scripts/setlocalversion
-         sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/external/dtc/scripts/setlocalversion
-         sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion            
-         sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
-         sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
-         echo "✅ 内核源码准备完成"
+         echo "⬇️ 下载内核设置工具..."
+         curl -L -o setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup.bin
+         chmod +x setup.bin
+         ./setup.bin
+         echo "✅ 内核配置完成"
 
       # ====================== 内核定制阶段 ======================
       - name: "⚡ Setup KernelSU Next | 配置 KernelSU Next"
