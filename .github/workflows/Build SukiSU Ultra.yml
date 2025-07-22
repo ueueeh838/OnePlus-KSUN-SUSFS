@@ -236,9 +236,10 @@ jobs:
          repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
          
          echo "⬇️ 下载内核设置工具..."
-         curl -L -o setup_kernel.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup_kernel.bin
-         chmod +x setup_kernel.bin
-         ./setup_kernel.bin
+         curl -L -o kernel_setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/kernel_setup.bin
+         chmod +x kernel_setup.bin
+         ./kernel_setup.bin
+         
          echo "✅ 内核配置完成"
       # ====================== 内核定制阶段 ======================
       - name: "⚡ Setup SukiSU Ultra | 配置SukiSU Ultra"
@@ -252,8 +253,8 @@ jobs:
           
           cd KernelSU
           echo "⬇️ 下载KernelSU设置工具..."
-          curl -L -o setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/setup.bin
-          chmod +x setup.bin
+          curl -L -o sukisu_setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/sukisu_setup.bin
+          chmod +x sukisu_setup.bin
           
           # 验证Makefile存在
           if [ ! -f "kernel/Makefile" ]; then
@@ -261,7 +262,8 @@ jobs:
             ls -la
             exit 1
           fi
-          ./setup.bin
+          
+          ./sukisu_setup.bin
           echo "✅ SukiSU Ultra配置完成"
           
       - name: "🔧 Set up SUSFS | 配置 SUSFS"
@@ -271,7 +273,7 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
           git clone https://github.com/Xiaomichael/kernel_patches.git
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
-          git clone https://github.com/Lama3L9R/sukisu-quick-setup.git
+          # git clone https://github.com/Lama3L9R/sukisu-quick-setup.git
           
           cd kernel_platform
           echo "📝 复制补丁文件..."
