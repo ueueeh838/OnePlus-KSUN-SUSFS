@@ -1,4 +1,4 @@
-name: 清理缓存
+name: Clean Caches
 
 on:
   workflow_dispatch:
