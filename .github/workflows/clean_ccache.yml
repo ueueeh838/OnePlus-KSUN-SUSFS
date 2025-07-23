@@ -1,4 +1,4 @@
-name: 清理全部ccache缓存
+name: 清理缓存
 
 on:
   workflow_dispatch:
