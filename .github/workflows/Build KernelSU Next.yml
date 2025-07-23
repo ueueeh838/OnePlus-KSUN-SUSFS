@@ -75,6 +75,33 @@ on:
           - '5.15'
           - '5.10'
         default: '6.1'
+
+      lz4kd:
+       description: "是否启用lz4kd(关闭则6.1系启用lz4 + zstd)"
+       required: true
+       type: choice
+       options:
+          - 'On'
+          - 'Off'
+       default: 'Off'
+
+      bbr:
+       description: "是否启用bbr算法(优化上行数据, 对手机日用无太大意义甚至可能负优化)"
+       required: true
+       type: choice
+       options:
+          - 'On'
+          - 'Off'
+       default: 'Off'
+
+      proxy:
+       description: "是否添加代理性能优化"
+       required: true
+       type: choice
+       options:
+          - 'On'
+          - 'Off'
+       default: 'On'
         
 jobs:
   build:
@@ -189,41 +216,59 @@ jobs:
         
       - name: "🔧 Set up SUSFS | 配置 SUSFS"
         run: |
-           cd kernel_workspace
-           echo "⬇️ 下载SUSFS补丁..."
-           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
-           git clone https://github.com/Xiaomichael/kernel_patches.git
-           cd kernel_platform
-           echo "📝 复制补丁文件..."
-           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
-           cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./common/
-           cp ../kernel_patches/next/0001-kernel-implement-susfs-v1.5.8-KernelSU-Next-v1.0.8.patch ./KernelSU-Next/
+          cd kernel_workspace
+          echo "⬇️ 下载SUSFS补丁..."
+          git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
+          git clone https://github.com/Xiaomichael/kernel_patches.git
+          git clone https://github.com/ShirkNeko/SukiSU_patch.git
+          cd kernel_platform
+          echo "📝 复制补丁文件..."
+          cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
+          cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./common/
+          cp ../kernel_patches/next/0001-kernel-implement-susfs-v1.5.8-KernelSU-Next-v1.0.8.patch ./KernelSU-Next/
            
-           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
-             cp ../kernel_patches/zram/001-lz4.patch ./common/
-             cp ../kernel_patches/zram/lz4armv8.S ./common/lib
-             cp ../kernel_patches/zram/002-zstd.patch ./common/
-           fi
-           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
-           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+          if [ "${{ github.event.inputs.lz4kd }}" = "Off" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
+            cp ../kernel_patches/zram/001-lz4.patch ./common/
+            cp ../kernel_patches/zram/lz4armv8.S ./common/lib
+            # cp ../kernel_patches/zram/lz4-oneplus.patch ./common/
+            cp ../kernel_patches/zram/002-zstd.patch ./common/
+          fi
+          if [ "${{ github.event.inputs.lz4kd }}" == "On" ]; then
+            # Copy lz4k from ShirkNeko
+            cp -r ../SukiSU_patch/other/zram/lz4k/include/linux/* ./common/include/linux
+            cp -r ../SukiSU_patch/other/zram/lz4k/lib/* ./common/lib
+            cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./common/crypto
+            cp -r ../SukiSU_patch/other/zram/lz4k_oplus ./common/lib/
+          fi
+          cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
+          cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
            
-           # Apply patches
-           cd ./KernelSU-Next
-           patch -p1 < --forward < 0001-kernel-implement-susfs-v1.5.8-KernelSU-Next-v1.0.8.patch || true
-           echo "🔧 应用补丁..."
+          # Apply patches
+          cd ./KernelSU-Next
+          patch -p1 < --forward < 0001-kernel-implement-susfs-v1.5.8-KernelSU-Next-v1.0.8.patch || true
+          echo "🔧 应用补丁..."
            
-           cd ../common
-           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
-             echo "📦 应用lz4+zstd补丁..."
-             git apply -p1 < 001-lz4.patch || true
-             patch -p1 < 002-zstd.patch || true
-           fi
+          cd ../common
+          if [ "${{ github.event.inputs.lz4kd }}" = "Off" ] && [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
+            echo "📦 应用lz4+zstd补丁..."
+            git apply -p1 < 001-lz4.patch || true
+            # patch -p1 < lz4-oneplus.patch || true
+            patch -p1 < 002-zstd.patch || true
+          fi
+          
+          if [ "${{ github.event.inputs.lz4kd }}" == "On" ]; then
+            echo "🚀 应用lz4kd补丁..."
+            cp ../../SukiSU_patch/other/zram/zram_patch/${{ github.event.inputs.KERNEL_VERSION }}/lz4kd.patch ./
+            patch -p1 -F 3 < lz4kd.patch || true
+            cp ../../SukiSU_patch/other/zram/zram_patch/${{ github.event.inputs.KERNEL_VERSION }}/lz4k_oplus.patch ./
+            patch -p1 -F 3 < lz4k_oplus.patch || true
+          fi
            
-           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
-           cp ../../kernel_patches/69_hide_stuff.patch ./
-           patch -p1 -F 3 < 69_hide_stuff.patch
-           patch -p1 --fuzz=3 < scope_min_manual_hooks_v1.4.patch
-           echo "✅ 所有补丁应用完成"
+          patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
+          cp ../../kernel_patches/69_hide_stuff.patch ./
+          patch -p1 -F 3 < 69_hide_stuff.patch
+          patch -p1 --fuzz=3 < scope_min_manual_hooks_v1.4.patch
+          echo "✅ 所有补丁应用完成"
            
       - name: "⚙️ Configure Kernel Options | 配置内核选项"
         run: |
@@ -252,14 +297,54 @@ jobs:
             echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
             
-            # Add BBR
-            echo "🌐 启用BBR网络算法..."
-            echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_TCP_CONG_BIC=n" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_TCP_CONG_WESTWOOD=n" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_TCP_CONG_HTCP=n" >> ./common/arch/arm64/configs/gki_defconfig
+            if [ "${{ github.event.inputs.bbr }}" == "On" ]; then
+              echo "🌐 启用BBR网络算法..."
+              echo "CONFIG_TCP_CONG_ADVANCED=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_TCP_CONG_BBR=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_NET_SCH_FQ=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_TCP_CONG_BIC=n" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_TCP_CONG_WESTWOOD=n" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_TCP_CONG_HTCP=n" >> ./common/arch/arm64/configs/gki_defconfig
+            fi
+            
+            if [ "${{ github.event.inputs.lz4kd }}" == "On" ]; then
+              echo "📦 启用lz4kd压缩..."
+              echo "CONFIG_CRYPTO_LZ4KD=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_CRYPTO_LZ4K_OPLUS=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_ZRAM_WRITEBACK=y" >> ./common/arch/arm64/configs/gki_defconfig
+            fi
+            
+            if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
+              # Add O2 config
+              echo "📦 为6.1加入O2优化"
+              echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> ./common/arch/arm64/configs/gki_defconfig
+            fi
+
+            if [ "${{ github.event.inputs.proxy }}" == "On" ]; then
+              # Add proxy config
+              echo "CONFIG_BPF_STREAM_PARSER=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_NETFILTER_XT_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_MAX=65534" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_BITMAP_IP=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_BITMAP_PORT=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_IP=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_IPMARK=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_IPPORT=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_IPMAC=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_MAC=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_NETPORTNET=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_NET=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_NETNET=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_NETPORT=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP_SET_LIST_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP6_NF_NAT=y" >> ./common/arch/arm64/configs/gki_defconfig
+              echo "CONFIG_IP6_NF_TARGET_MASQUERADE=y" >> ./common/arch/arm64/configs/gki_defconfig
 
             if [ "${{ inputs.KERNEL_VERSION }}" = "5.10" ] || [ "${{ inputs.KERNEL_VERSION }}" = "5.15" ]; then
             echo "📦 正在为5.10系与5.15系配置lto中...."
@@ -327,7 +412,9 @@ jobs:
       - name: "🧠 Set Artifact Name | 设置产物名称"
         id: set_name
         run: |
-          if [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
+          if [ "${{ github.event.inputs.lz4kd }}" = "On" ]; then
+            echo "ARTIFACT_NAME=AnyKernel3_KernelSU_Next_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
             echo "ARTIFACT_NAME=AnyKernel3_KernelSU_Next_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
           else
             echo "ARTIFACT_NAME=AnyKernel3_KernelSU_Next_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
@@ -338,3 +425,16 @@ jobs:
         with:
          name: ${{ steps.set_name.outputs.ARTIFACT_NAME }}
          path: ./AnyKernel3/*
+
+      - name: "📝 Find zram.ko & crypto_zstdn.ko | 查找 zram.ko & crypto_zstdn.ko"
+        if: ${{ github.event.inputs.lz4kd == 'On' }}
+        run: |
+          find -name zram.ko
+          find -name crypto_zstdn.ko
+          
+      - name: "📤 Upload zram.ko | 上传 zram.ko"
+        if: ${{ github.event.inputs.lz4kd == 'On' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: zram.ko
+          path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
