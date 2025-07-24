@@ -522,7 +522,7 @@ jobs:
             # zip -q -r "../${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip" ./*
             # cd ..
             # cat > release.txt << 'EOF'
-            # ${{ github.event.inputs.FEIL }}
+            # \# ${{ github.event.inputs.FEIL }}
             # ```
             # 构建时间：$(TZ=Asia/Shanghai date)
             # 内核版本：${{ github.event.inputs.ANDROID_VERSION}}-${{ github.event.inputs.KERNEL_VERSION }}
