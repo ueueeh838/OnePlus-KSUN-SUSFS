@@ -274,7 +274,6 @@ jobs:
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
           git clone https://github.com/Xiaomichael/kernel_patches.git
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
-          # git clone https://github.com/Lama3L9R/sukisu-quick-setup.git
           
           cd kernel_platform
           echo "📝 复制补丁文件..."
@@ -320,9 +319,6 @@ jobs:
             patch -p1 -F 3 < lz4k_oplus.patch || true
           fi
           
-          # Add support for zakosu
-          # cp ../sukisu-quick-setup/patches/01-add-zakosu-manager.patch ./common/
-          # patch -p1 -F 3 < 01-add-zakosu-manager.patch
           echo "✅ 所有补丁应用完成"
 
       - name: "⚙️ Configure Kernel Options | 配置内核选项"
@@ -376,12 +372,13 @@ jobs:
           
           if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
             # Add O2 config
-            echo "📦 为6.1加入O2优化"
+            echo "📦 为6.1加入O2优化..."
             echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> ./common/arch/arm64/configs/gki_defconfig
           fi
 
           if [ "${{ github.event.inputs.proxy }}" == "On" ]; then
             # Add proxy config
+            echo "📦 加入代理优化..."
             echo "CONFIG_BPF_STREAM_PARSER=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_NETFILTER_XT_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
