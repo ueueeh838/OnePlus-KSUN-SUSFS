@@ -210,7 +210,7 @@ jobs:
           # use pershoot's susfs-ksun
           curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs
           cd KernelSU-Next
-          KSU_VERSION=$(expr $(/usr/bin/git rev-list --count HEAD) "+" 10160)
+          KSU_VERSION=$(expr $(/usr/bin/git rev-list --count HEAD) "+" 10161)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
           sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
           echo "✅ KernelSU Next 配置完成"
