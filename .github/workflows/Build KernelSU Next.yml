@@ -342,7 +342,7 @@ jobs:
             echo "CONFIG_IP6_NF_NAT=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_IP6_NF_TARGET_MASQUERADE=y" >> ./common/arch/arm64/configs/gki_defconfig
 
-          if [ "${{ github.event.inputs.KERNEL_VERSION }}" = "5.10" ] || [ "${{ github.event.inputs.KERNEL_VERSION }}" = "5.15" ]; then
+          if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "5.10" ] || [ "${{ github.event.inputs.KERNEL_VERSION }}" == "5.15" ]; then
             echo "📦 正在为5.10系与5.15系配置lto中...."
             DEFCONFIG=./common/arch/arm64/configs/gki_defconfig
             sed -i 's/^CONFIG_LTO=n/CONFIG_LTO=y/' "$DEFCONFIG"
