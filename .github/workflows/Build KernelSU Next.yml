@@ -309,12 +309,6 @@ jobs:
             echo "CONFIG_CRYPTO_LZ4K_OPLUS=y" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_ZRAM_WRITEBACK=y" >> ./common/arch/arm64/configs/gki_defconfig
           fi
-            
-          if [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.1" ]; then
-            # Add O2 config
-            echo "📦 为6.1加入O2优化"
-            echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> ./common/arch/arm64/configs/gki_defconfig
-          fi
 
           if [ "${{ github.event.inputs.proxy }}" == "On" ]; then
             # Add proxy config
