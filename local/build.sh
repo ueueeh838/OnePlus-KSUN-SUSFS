@@ -1,9 +1,10 @@
 #!/bin/bash
+export all_proxy=socks5://192.168.2.150:10810/
 # filepath: build_sukisu_ultra.sh
 
 set -e
 
-# 参数定义
+# ========== 参数解析 ==========
 CPU=${1:-sm8650}
 FEIL=${2:-oneplus_12}
 CPUD=${3:-pineapple}
@@ -14,7 +15,9 @@ lz4kd=${7:-Off}
 bbr=${8:-Off}
 proxy=${9:-On}
 
-# ========== 环境变量与缓存 ==========
+echo "参数: CPU=$CPU FEIL=$FEIL CPUD=$CPUD ANDROID_VERSION=$ANDROID_VERSION KERNEL_VERSION=$KERNEL_VERSION KPM=$KPM lz4kd=$lz4kd bbr=$bbr proxy=$proxy"
+
+# ========== 环境变量与ccache ==========
 export CCACHE_COMPILERCHECK="%compiler% -dumpmachine; %compiler% -dumpversion"
 export CCACHE_NOHASHDIR="true"
 export CCACHE_HARDLINK="true"
@@ -22,37 +25,23 @@ export CCACHE_MAXSIZE=8G
 export CCACHE_DIR="$HOME/.ccache_${FEIL}"
 mkdir -p "$CCACHE_DIR"
 
-# ========== APT缓存 ==========
-APT_CACHE_DIR="$HOME/apt-cache"
-mkdir -p "$APT_CACHE_DIR"/{archives,lists/partial}
-sudo tee /etc/apt/apt.conf.d/90user-cache <<EOF
-Dir::Cache "$APT_CACHE_DIR";
-Dir::Cache::archives "$APT_CACHE_DIR/archives";
-Dir::State::lists "$APT_CACHE_DIR/lists";
-Acquire::Check-Valid-Until "false";
-Acquire::Languages "none";
-EOF
-sudo chown -R $USER:$USER "$APT_CACHE_DIR"
-
-# ========== 安装依赖 ==========
-sudo rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock
-sudo apt -o Dir::Cache="$APT_CACHE_DIR" update -qq
-sudo DEBIAN_FRONTEND=noninteractive apt -o Dir::Cache="$APT_CACHE_DIR" install -yq --no-install-recommends \
-  python3 git curl ccache libelf-dev \
-  build-essential flex bison libssl-dev \
-  libncurses-dev liblz4-tool zlib1g-dev \
-  libxml2-utils rsync unzip
-
-# ========== ccache初始化 ==========
 if command -v ccache >/dev/null 2>&1; then
-  mkdir -p "$CCACHE_DIR"
   ccache -M $CCACHE_MAXSIZE
+  ccache -z
   ccache -s
+else
+  echo "⚠️ 未找到ccache命令，建议安装以加速编译"
 fi
 
 # ========== 配置Git ==========
 git config --global user.name "build"
 git config --global user.email "2210077278@qq.com"
+
+# ========== 安装依赖 ==========
+sudo apt update
+sudo DEBIAN_FRONTEND=noninteractive apt install -y python3 git curl ccache libelf-dev \
+  build-essential flex bison libssl-dev libncurses-dev liblz4-tool zlib1g-dev \
+  libxml2-utils rsync unzip
 
 # ========== 下载repo工具 ==========
 if ! command -v repo >/dev/null 2>&1; then
@@ -62,7 +51,7 @@ if ! command -v repo >/dev/null 2>&1; then
 fi
 
 # ========== 克隆内核源码 ==========
-mkdir -p kernel_workspace && cd kernel_workspace
+rm -rf kernel_workspace && mkdir -p kernel_workspace && cd kernel_workspace
 repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${CPU} -m ${FEIL}.xml --depth=1
 repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
 
@@ -231,9 +220,9 @@ elif [ "$KERNEL_VERSION" = "5.10" ]; then
 fi
 
 ccache -s
+
 # ========== 打包 AnyKernel3 ==========
-echo "📦 开始打包 AnyKernel3 ..."
-cd "$OLDPWD"  # 回到脚本启动目录，或指定合适路径
+cd "$OLDPWD"
 AK3_DIR="AnyKernel3"
 if [ -d "$AK3_DIR" ]; then
   rm -rf "$AK3_DIR"
@@ -241,7 +230,6 @@ fi
 git clone --depth=1 https://github.com/Xiaomichael/AnyKernel3 "$AK3_DIR"
 rm -rf "$AK3_DIR/.git"
 
-# 拷贝 Image 到 AnyKernel3
 IMAGE_PATH=$(find kernel_workspace/kernel_platform/common/out/ -name "Image" | head -n 1)
 if [ -n "$IMAGE_PATH" ] && [ -f "$IMAGE_PATH" ]; then
   cp "$IMAGE_PATH" "$AK3_DIR/Image"
@@ -250,8 +238,21 @@ else
   echo "❌ 未找到 Image 文件，打包失败"
 fi
 
-# 拷贝模块到 AnyKernel3
-echo "✅ 内核编译完成，产物请在 out/ 目录查找"
+# ========== KPM 修补镜像 ==========
+if [ "$KPM" = "On" ]; then
+  echo "🧩 正在修补 KPM 镜像 ..."
+  cd kernel_workspace/kernel_platform/out/
+  curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
+  chmod +x patch_linux
+  ./patch_linux
+  rm -f Image
+  mv oImage Image
+  cp Image "$OLDPWD/$AK3_DIR/Image"
+  cd "$OLDPWD"
+  echo "✅ KPM 修补完成"
+fi
+
+echo "✅ 内核编译完成，产物请在 out/ 目录查找，AnyKernel3 打包目录为 $AK3_DIR"
 
 # 用法示例：
 # bash build_sukisu_ultra.sh sm8650 oneplus_12 pineapple android14 6.1 Off Off Off On
