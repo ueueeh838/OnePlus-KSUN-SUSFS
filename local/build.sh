@@ -74,7 +74,7 @@ cd "$WORKSPACE"
 
 # Install dependencies BEFORE trying to use them.
 echo "📦 Installing build dependencies (requires sudo)..."
-sudo apt-get update -qq
+sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
   python3 git curl ccache libelf-dev \
   build-essential flex bison libssl-dev \
