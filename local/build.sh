@@ -1,236 +1,404 @@
 #!/bin/bash
-export all_proxy=socks5://192.168.2.150:10810/
+#
+# Build SukiSU Ultra - Local Build Script
+#
+# Converted from a GitHub Actions workflow into a standalone script.
+# This script is designed to be run on a Debian-based Linux distribution (e.g., Ubuntu).
+#
+# Usage:
+# 1. Make the script executable:
+#    chmod +x build_sukisu_local.sh
+#
+# 2. Run the script:
+#    ./build_sukisu_local.sh
+#
+# 3. Follow the on-screen prompts to configure your build.
+#
+# 4. (Optional) For Telegram upload, export these variables before running:
+#    export BOT_TOKEN="your_bot_token"
+#    export CHATID="your_chat_id"
+#    export MESSAGE_THREAD_ID="your_topic_id" # Optional, for topics/forums
+#
 
-# ========== 参数设置 ==========
-CPU=${1:-sm8650}
-FEIL=${2:-oneplus_12}
-CPUD=${3:-pineapple}
-ANDROID_VERSION=${4:-android14}
-KERNEL_VERSION=${5:-6.1}
-KPM=${6:-Off}
-lz4kd=${7:-Off}
-bbr=${8:-Off}
-proxy=${9:-On}
+set -e # Exit immediately if a command exits with a non-zero status.
 
-# ========== 环境变量配置 ==========
+# --- Build Configuration ---
+clear
+echo "================================================="
+echo "  SukiSU Ultra Local Kernel Build Configuration  "
+echo "================================================="
+echo "Press Enter to accept the default value in [brackets]."
+echo ""
+
+# Function to prompt user for input with a default value
+ask() {
+    local prompt default reply
+    prompt="$1"
+    default="$2"
+    
+    read -p "$prompt [$default]: " reply
+    echo "${reply:-$default}"
+}
+
+# --- Interactive Inputs ---
+CPU=$(ask "Enter CPU branch (e.g., sm8650, sm8550)" "sm8650")
+FEIL=$(ask "Enter phone model (e.g., oneplus_12, oneplus_11)" "oneplus_12")
+CPUD=$(ask "Enter processor codename (e.g., pineapple, kalama)" "pineapple")
+ANDROID_VERSION=$(ask "Enter kernel Android version (android14, android13, android12)" "android14")
+KERNEL_VERSION=$(ask "Enter kernel version (6.1, 5.15, 5.10)" "6.1")
+KPM=$(ask "Enable KPM (Kernel Patch Manager)? (On/Off)" "Off")
+lz4kd=$(ask "Enable lz4kd? (6.1 uses lz4+zstd if Off) (On/Off)" "Off")
+bbr=$(ask "Enable BBR congestion control algorithm? (On/Off)" "Off")
+proxy=$(ask "Add proxy performance optimization? (On/Off)" "On")
+
+# --- Display Configuration Summary ---
+echo ""
+echo "================================================="
+echo "         Configuration Summary"
+echo "================================================="
+echo "Phone Model        : $FEIL"
+echo "CPU                : $CPU"
+echo "Android Version    : $ANDROID_VERSION"
+echo "Kernel Version     : $KERNEL_VERSION"
+echo "KPM Enabled        : $KPM"
+echo "lz4kd Enabled      : $lz4kd"
+echo "BBR Enabled        : $bbr"
+echo "Proxy Opts Enabled : $proxy"
+echo "================================================="
+read -p "Press Enter to begin the build process..."
+
+# --- Environment Setup ---
+WORKSPACE=$PWD/build_workspace
+mkdir -p "$WORKSPACE"
+cd "$WORKSPACE"
+
+# Set up and improve ccache
+echo "⚙️ Setting up ccache..."
+export CCACHE_DIR="$HOME/.ccache_${FEIL}"
 export CCACHE_COMPILERCHECK="%compiler% -dumpmachine; %compiler% -dumpversion"
 export CCACHE_NOHASHDIR="true"
 export CCACHE_HARDLINK="true"
-export CCACHE_MAXSIZE=8G
-export CCACHE_DIR="$HOME/.ccache_${FEIL}"
+export CCACHE_MAXSIZE="20G" # Generous size for local builds
+export PATH="/usr/lib/ccache:$PATH"
+mkdir -p "$CCACHE_DIR"
+echo "✅ ccache directory set to: $CCACHE_DIR"
+ccache -M "$CCACHE_MAXSIZE"
+ccache -z # Clear statistics for a clean run summary
 
-# ========== 工作目录设置 ==========
-WORK_DIR="$HOME/kernel_build"
-mkdir -p "$WORK_DIR"
-cd "$WORK_DIR"
+# Configure Git for repo tool
+echo "🔐 Configuring Git user info..."
+git config --global user.name "Local Builder"
+git config --global user.email "builder@localhost"
+echo "✅ Git configured."
 
-# ========== 初始化步骤 ==========
-echo "🚀 初始化构建环境..."
+# Install Dependencies
+echo "📦 Installing build dependencies (requires sudo)..."
+sudo apt-get update -qq
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+  python3 git curl ccache libelf-dev \
+  build-essential flex bison libssl-dev \
+  libncurses-dev liblz4-tool zlib1g-dev \
+  libxml2-utils rsync unzip python3-pip
+echo "✅ All dependencies installed successfully."
 
-# 配置Git
-git config --global user.name "build"
-git config --global user.email "2210077278@qq.com"
+# --- Source Code and Tooling ---
 
-# 安装依赖
-echo "📦 安装必要依赖..."
-sudo apt-get update
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    git curl ccache python3 \
-    build-essential flex bison libssl-dev \
-    libncurses-dev liblz4-tool zlib1g-dev \
-    libxml2-utils rsync unzip libelf-dev \
-    python3-pip
-
-# 初始化ccache
-if command -v ccache >/dev/null 2>&1; then
-    mkdir -p "$CCACHE_DIR"
-    ccache -M "$CCACHE_MAXSIZE"
-    ccache -z
-    echo "💾 ccache 已初始化"
-else
-    echo "⚠️ 未找到ccache，建议安装以加速编译"
-fi
-
-# 安装repo工具
-if ! command -v repo >/dev/null 2>&1; then
+# Install Google Repo Tool if not present
+if ! command -v repo &> /dev/null; then
+    echo "📥 Installing Google Repo tool..."
     curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
     chmod a+x ~/repo
     sudo mv ~/repo /usr/local/bin/repo
+    echo "✅ Repo tool installed."
+else
+    echo "ℹ️ Repo tool already installed."
 fi
 
-# ========== 克隆源码 ==========
-echo "⬇️ 克隆内核源码..."
-rm -rf kernel_workspace
-mkdir -p kernel_workspace
-cd kernel_workspace
-repo init -u https://github.com/Xiaomichael/kernel_manifest.git \
-    -b refs/heads/oneplus/${CPU} -m ${FEIL}.xml --depth=1
+# Clone Kernel Source
+echo "⬇️ Cloning kernel source code..."
+mkdir -p kernel_workspace && cd kernel_workspace
+
+echo "🌐 Initializing repo for oneplus/${CPU} on model ${FEIL}..."
+repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/oneplus/${CPU} -m ${FEIL}.xml --depth=1
+
+echo "🔄 Syncing repositories (using $(nproc --all) threads)..."
 repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
 
-# ========== 配置内核 ==========
-echo "⚙️ 配置内核..."
-curl -L -o kernel_setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/kernel_setup.bin
-chmod +x kernel_setup.bin
-./kernel_setup.bin
+echo "🔧 Cleaning up and modifying version strings..."
+rm -f kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports to remove from common!"
+rm -f kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports to remove from msm-kernel!"
 
-# 配置SukiSU Ultra
-mkdir -p kernel_platform
+sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
+sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
+sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
+sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/common/scripts/setlocalversion
+sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/msm-kernel/scripts/setlocalversion
+sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/external/dtc/scripts/setlocalversion
+sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion
+sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
+sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
+echo "✅ Kernel source cloned and configured."
+cd .. # Back to $WORKSPACE
+
+# --- Kernel Customization ---
+cd kernel_workspace
+
+# Setup SukiSU Ultra
+echo "⚡ Setting up SukiSU Ultra..."
 cd kernel_platform
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/setup.sh" | bash -s susfs-main
 
+# Get KSU Version info
 cd KernelSU
-curl -L -o sukisu_setup.bin https://github.com/Xiaomichael/OnePlus-Actions/raw/Build/script/sukisu_setup.bin
-chmod +x sukisu_setup.bin
-[ -f "kernel/Makefile" ] || { echo "❌ 错误：缺少kernel/Makefile"; exit 1; }
-./sukisu_setup.bin
-cd ../..
+KSU_VERSION_COUNT=$(git rev-list --count main)
+export KSUVER=$(expr $KSU_VERSION_COUNT + 10700)
 
-# ========== SUSFS补丁 ==========
+KSU_API_VERSION=""
+for i in {1..3}; do
+  KSU_API_VERSION=$(curl -fsSL "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/Makefile" | grep -m1 "KSU_VERSION_API :=" | awk -F'= ' '{print $2}' | tr -d '[:space:]')
+  [ -n "$KSU_API_VERSION" ] && break || sleep 2
+done
+
+if [ -z "$KSU_API_VERSION" ]; then
+  echo "❌ Error: Could not fetch KSU_API_VERSION from GitHub." >&2
+  exit 1
+fi
+
+KSU_COMMIT_HASH=$(git ls-remote https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/susfs-main | awk '{print $1}' | cut -c1-8)
+export KSUVER_STR="v${KSU_API_VERSION}-${KSU_COMMIT_HASH}-xiaoxiaow"
+echo "ℹ️ KSU Version: $KSUVER ($KSUVER_STR)"
+
+VERSION_DEFINITIONS=$(cat << EOF
+define get_ksu_version_full
+v\\\$1-${KSU_COMMIT_HASH}-xiaoxiaow
+endef
+KSU_VERSION_API := ${KSU_API_VERSION}
+KSU_VERSION_FULL := ${KSUVER_STR}
+EOF
+)
+
+sed -i '/define get_ksu_version_full/,/endef/d' kernel/Makefile
+sed -i '/KSU_VERSION_API :=/d' kernel/Makefile
+sed -i '/KSU_VERSION_FULL :=/d' kernel/Makefile
+awk -v def="$VERSION_DEFINITIONS" '/REPO_OWNER :=/ {print; print def; inserted=1; next} 1 END {if (!inserted) print def}' kernel/Makefile > kernel/Makefile.tmp && mv kernel/Makefile.tmp kernel/Makefile
+
+if [ ! -f "kernel/Makefile" ]; then echo "❌ Error: SukiSU setup failed, kernel/Makefile is missing." && exit 1; fi
+echo "✅ SukiSU Ultra configured."
+cd ../.. # Back to $WORKSPACE/kernel_workspace
+
+# Set up SUSFS and other patches
+echo "🔧 Setting up SUSFS and applying patches..."
 cd kernel_workspace
 git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${ANDROID_VERSION}-${KERNEL_VERSION}
 git clone https://github.com/Xiaomichael/kernel_patches.git
 git clone https://github.com/ShirkNeko/SukiSU_patch.git
 
-# 应用补丁
 cd kernel_platform
+echo "📝 Copying patch files..."
 cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${ANDROID_VERSION}-${KERNEL_VERSION}.patch ./common/
 cp ../kernel_patches/next/syscall_hooks.patch ./common/
-cp -r ../susfs4ksu/kernel_patches/fs/* ./common/fs/
-cp -r ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
+cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 
-# lz4kd相关补丁
 if [ "$lz4kd" = "Off" ] && [ "$KERNEL_VERSION" = "6.1" ]; then
-    cp ../kernel_patches/zram/001-lz4.patch ./common/
-    cp ../kernel_patches/zram/lz4armv8.S ./common/lib
-    cp ../kernel_patches/zram/002-zstd.patch ./common/
+  echo "📦 Copying lz4+zstd patches..."
+  cp ../kernel_patches/zram/001-lz4.patch ./common/
+  cp ../kernel_patches/zram/lz4armv8.S ./common/lib
+  cp ../kernel_patches/zram/002-zstd.patch ./common/
 fi
 
 if [ "$lz4kd" = "On" ]; then
-    cp -r ../SukiSU_patch/other/zram/lz4k/include/linux/* ./common/include/linux
-    cp -r ../SukiSU_patch/other/zram/lz4k/lib/* ./common/lib
-    cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./common/crypto
-    cp -r ../SukiSU_patch/other/zram/lz4k_oplus ./common/lib/
+  echo "🚀 Copying lz4kd patches..."
+  cp -r ../SukiSU_patch/other/zram/lz4k/include/linux/* ./common/include/linux
+  cp -r ../SukiSU_patch/other/zram/lz4k/lib/* ./common/lib
+  cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./common/crypto
+  cp -r ../SukiSU_patch/other/zram/lz4k_oplus ./common/lib/
 fi
 
-# ========== 配置内核选项 ==========
-DEFCONFIG=kernel_workspace/kernel_platform/common/arch/arm64/configs/gki_defconfig
+echo "🔧 Applying patches..."
+cd ./common
+patch -p1 < 50_add_susfs_in_gki-${ANDROID_VERSION}-${KERNEL_VERSION}.patch || true
+cp ../../kernel_patches/69_hide_stuff.patch ./
+patch -p1 -F 3 < 69_hide_stuff.patch || true
+patch -p1 -F 3 < syscall_hooks.patch || true
 
-# 基础配置
-{
-    echo "CONFIG_KSU=y"
-    [ "$KPM" = "On" ] && echo "CONFIG_KPM=y"
-    echo "CONFIG_KSU_SUSFS_SUS_SU=n"
-    echo "CONFIG_KSU_MANUAL_HOOK=y"
-    echo "CONFIG_KSU_SUSFS=y"
-    # ...其他SUSFS配置...
-} >> "$DEFCONFIG"
+if [ "$lz4kd" = "Off" ] && [ "$KERNEL_VERSION" = "6.1" ]; then
+  echo "📦 Applying lz4+zstd patches..."
+  git apply 001-lz4.patch || true
+  patch -p1 < 002-zstd.patch || true
+fi
 
-# BBR配置
+if [ "$lz4kd" = "On" ]; then
+  echo "🚀 Applying lz4kd patches..."
+  cp ../../SukiSU_patch/other/zram/zram_patch/${KERNEL_VERSION}/lz4kd.patch ./
+  patch -p1 -F 3 < lz4kd.patch || true
+  cp ../../SukiSU_patch/other/zram/zram_patch/${KERNEL_VERSION}/lz4k_oplus.patch ./
+  patch -p1 -F 3 < lz4k_oplus.patch || true
+fi
+echo "✅ All patches applied."
+cd ../.. # Back to $WORKSPACE/kernel_workspace
+
+# Configure Kernel Options
+echo "⚙️ Configuring kernel build options (defconfig)..."
+DEFCONFIG_PATH="$WORKSPACE/kernel_workspace/kernel_platform/common/arch/arm64/configs/gki_defconfig"
+
+cat <<EOT >> "$DEFCONFIG_PATH"
+
+#--- SukiSU Ultra & SUSFS Custom Configs ---
+CONFIG_KSU=y
+CONFIG_KSU_MANUAL_HOOK=y
+CONFIG_KSU_SUSFS=y
+CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y
+CONFIG_KSU_SUSFS_SUS_PATH=y
+CONFIG_KSU_SUSFS_SUS_MOUNT=y
+CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y
+CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y
+CONFIG_KSU_SUSFS_SUS_KSTAT=y
+CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n
+CONFIG_KSU_SUSFS_TRY_UMOUNT=y
+CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y
+CONFIG_KSU_SUSFS_SPOOF_UNAME=y
+CONFIG_KSU_SUSFS_ENABLE_LOG=y
+CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y
+CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
+CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
+CONFIG_KSU_SUSFS_SUS_SU=n
+EOT
+
+if [ "$KPM" = "On" ]; then echo "CONFIG_KPM=y" >> "$DEFCONFIG_PATH"; fi
+
 if [ "$bbr" = "On" ]; then
-    {
-        echo "CONFIG_TCP_CONG_ADVANCED=y"
-        echo "CONFIG_TCP_CONG_BBR=y"
-        echo "CONFIG_NET_SCH_FQ=y"
-        echo "CONFIG_TCP_CONG_BIC=n"
-        echo "CONFIG_TCP_CONG_WESTWOOD=n"
-        echo "CONFIG_TCP_CONG_HTCP=n"
-    } >> "$DEFCONFIG"
+  echo "🌐 Enabling BBR..."
+  cat <<EOT >> "$DEFCONFIG_PATH"
+CONFIG_TCP_CONG_ADVANCED=y
+CONFIG_TCP_CONG_BBR=y
+CONFIG_NET_SCH_FQ=y
+CONFIG_TCP_CONG_BIC=n
+CONFIG_TCP_CONG_WESTWOOD=n
+CONFIG_TCP_CONG_HTCP=n
+EOT
 fi
 
-# LZ4KD配置
 if [ "$lz4kd" = "On" ]; then
-    {
-        echo "CONFIG_CRYPTO_LZ4KD=y"
-        echo "CONFIG_CRYPTO_LZ4K_OPLUS=y"
-        echo "CONFIG_ZRAM_WRITEBACK=y"
-    } >> "$DEFCONFIG"
+  echo "📦 Enabling lz4kd..."
+  cat <<EOT >> "$DEFCONFIG_PATH"
+CONFIG_CRYPTO_LZ4KD=y
+CONFIG_CRYPTO_LZ4K_OPLUS=y
+CONFIG_ZRAM_WRITEBACK=y
+EOT
 fi
 
-# ========== 编译内核 ==========
-echo "🔨 开始编译内核..."
-cd kernel_workspace/kernel_platform/common
+if [ "$KERNEL_VERSION" = "6.1" ]; then echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> "$DEFCONFIG_PATH"; fi
 
-case "$KERNEL_VERSION" in
-    "6.1")
-        export PATH="$PWD/../prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
-        make -j$(nproc --all) LLVM=1 ARCH=arm64 \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            CC="ccache clang" \
-            RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc \
-            PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole \
-            LD=ld.lld HOSTLD=ld.lld O=out KCFLAGS+=-O2 \
-            gki_defconfig all
-        ;;
-    "5.15")
-        export PATH="$PWD/../prebuilts/clang/host/linux-x86/clang-r450784e/bin:$PATH"
-        make -j$(nproc --all) LLVM=1 ARCH=arm64 \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            CC="ccache clang" \
-            RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc \
-            PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole \
-            LD=ld.lld HOSTLD=ld.lld O=out \
-            gki_defconfig all
-        ;;
-    "5.10")
-        export PATH="$PWD/../prebuilts-master/clang/host/linux-x86/clang-r416183b/bin:$PATH"
-        make -j$(nproc --all) LLVM_IAS=1 LLVM=1 ARCH=arm64 \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            CC="ccache clang" \
-            RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc \
-            PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole \
-            LD=ld.lld HOSTLD=ld.lld O=out \
-            gki_defconfig all
-        ;;
-esac
+if [ "$proxy" = "On" ]; then
+  echo "📦 Adding proxy optimizations..."
+  cat <<EOT >> "$DEFCONFIG_PATH"
+CONFIG_BPF_STREAM_PARSER=y
+CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y
+CONFIG_NETFILTER_XT_SET=y
+CONFIG_IP_SET=y
+CONFIG_IP_SET_MAX=65534
+CONFIG_IP_SET_BITMAP_IP=y
+CONFIG_IP_SET_BITMAP_IPMAC=y
+CONFIG_IP_SET_BITMAP_PORT=y
+CONFIG_IP_SET_HASH_IP=y
+CONFIG_IP_SET_HASH_IPMARK=y
+CONFIG_IP_SET_HASH_IPPORT=y
+CONFIG_IP_SET_HASH_IPPORTIP=y
+CONFIG_IP_SET_HASH_IPPORTNET=y
+CONFIG_IP_SET_HASH_IPMAC=y
+CONFIG_IP_SET_HASH_MAC=y
+CONFIG_IP_SET_HASH_NETPORTNET=y
+CONFIG_IP_SET_HASH_NET=y
+CONFIG_IP_SET_HASH_NETNET=y
+CONFIG_IP_SET_HASH_NETPORT=y
+CONFIG_IP_SET_HASH_NETIFACE=y
+CONFIG_IP_SET_LIST_SET=y
+CONFIG_IP6_NF_NAT=y
+CONFIG_IP6_NF_TARGET_MASQUERADE=y
+EOT
+fi
 
-# 显示ccache统计
-ccache -s
+if [ "$KERNEL_VERSION" = "5.10" ] || [ "$KERNEL_VERSION" = "5.15" ]; then
+  echo "📦 Configuring LTO for Kernel 5.1x..."
+  sed -i 's/^CONFIG_LTO=n/CONFIG_LTO=y/' "$DEFCONFIG_PATH"
+  sed -i 's/^CONFIG_LTO_CLANG_FULL=y/CONFIG_LTO_CLANG_THIN=y/' "$DEFCONFIG_PATH"
+  sed -i 's/^CONFIG_LTO_CLANG_NONE=y/CONFIG_LTO_CLANG_THIN=y/' "$DEFCONFIG_PATH"
+  grep -q '^CONFIG_LTO_CLANG_THIN=y' "$DEFCONFIG_PATH" || echo 'CONFIG_LTO_CLANG_THIN=y' >> "$DEFCONFIG_PATH"
+fi
 
-# ========== 打包内核 ==========
-echo "📦 打包内核..."
-cd "$WORK_DIR"
-rm -rf AnyKernel3
-git clone --depth=1 https://github.com/Xiaomichael/AnyKernel3
+sed -i 's/check_defconfig//' "$WORKSPACE/kernel_workspace/kernel_platform/common/build.config.gki"
+echo "✅ Kernel defconfig updated."
+cd ../.. # Back to $WORKSPACE
 
-# 拷贝编译产物
-IMAGE_PATH=$(find kernel_workspace/kernel_platform/common/out/ -name "Image" | head -n 1)
-if [ -n "$IMAGE_PATH" ] && [ -f "$IMAGE_PATH" ]; then
-    cp "$IMAGE_PATH" AnyKernel3/Image
-    echo "✅ 已复制 Image 到 AnyKernel3"
+# --- Build and Package ---
+
+echo "🔨 Building the kernel..."
+cd "$WORKSPACE/kernel_workspace/kernel_platform/common"
+
+MAKE_CMD_COMMON="make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=\"ccache clang\" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out gki_defconfig all"
+
+if [ "$KERNEL_VERSION" = "6.1" ]; then
+    export KBUILD_BUILD_TIMESTAMP="Thu May 29 07:25:40 UTC 2025"
+    export KBUILD_BUILD_VERSION=1
+    export PATH="$WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r487747c/bin:$PATH"
+    eval "$MAKE_CMD_COMMON KCFLAGS+=-O2"
+elif [ "$KERNEL_VERSION" = "5.15" ]; then
+    export PATH="$WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r450784e/bin:$PATH"
+    eval "$MAKE_CMD_COMMON"
+elif [ "$KERNEL_VERSION" = "5.10" ]; then
+    export PATH="$WORKSPACE/kernel_workspace/kernel_platform/prebuilts-master/clang/host/linux-x86/clang-r416183b/bin:$PATH"
+    eval "make -j$(nproc) LLVM_IAS=1 $MAKE_CMD_COMMON"
 else
-    echo "❌ 未找到 Image 文件"
-    exit 1
+    echo "❌ Unsupported Kernel Version: $KERNEL_VERSION" && exit 1
 fi
 
-# KPM修补
-if [ "$KPM" = "On" ]; then
-    echo "🧩 正在修补KPM..."
-    cd kernel_workspace/kernel_platform/out/
+echo "📊 Displaying ccache statistics:"
+ccache -s
+echo "✅ Kernel compilation finished."
+cd "$WORKSPACE"
+
+# Package Kernel with AnyKernel3
+echo "📦 Packaging kernel with AnyKernel3..."
+git clone https://github.com/Xiaomichael/AnyKernel3 --depth=1
+rm -rf ./AnyKernel3/.git
+
+IMAGE_PATH=$(find "$WORKSPACE/kernel_workspace/kernel_platform/common/out/" -name "Image" | head -n 1)
+if [ -z "$IMAGE_PATH" ]; then echo "❌ FATAL: Kernel Image not found after build!" && exit 1; fi
+
+echo "✅ Kernel Image found at: $IMAGE_PATH"
+cp "$IMAGE_PATH" ./AnyKernel3/Image
+
+# Patch Kernel Image if KPM is enabled
+if [ "$KPM" = 'On' ]; then
+    echo "🧩 Applying KPM patch to kernel Image..."
+    mkdir -p kpm_patch_temp && cd kpm_patch_temp
     curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
     chmod +x patch_linux
-    ./patch_linux
-    mv oImage Image
-    cp Image "$WORK_DIR/AnyKernel3/"
-    cd "$WORK_DIR"
+    cp "$WORKSPACE/AnyKernel3/Image" ./Image
+    ./patch_linux # Patches 'Image' and creates 'oImage'
+    mv oImage "$WORKSPACE/AnyKernel3/Image"
+    cd .. && rm -rf kpm_patch_temp
+    echo "✅ KPM patch applied."
 fi
 
-# 查找模块
+# --- Finalize and Upload ---
+
 if [ "$lz4kd" = "On" ]; then
-    echo "🔍 查找内核模块..."
-    find . -name "zram.ko"
-    find . -name "crypto_zstdn.ko"
+  ARTIFACT_NAME="AnyKernel3_SukiSU_Ultra_lz4kd_${KSUVER}_${FEIL}"
+elif [ "$KERNEL_VERSION" = "6.1" ]; then
+  ARTIFACT_NAME="AnyKernel3_SukiSU_Ultra_lz4_zstd_${KSUVER}_${FEIL}"
+else
+  ARTIFACT_NAME="AnyKernel3_SukiSU_Ultra_${KSUVER}_${FEIL}"
 fi
+FINAL_ZIP_NAME="${ARTIFACT_NAME}.zip"
 
-# 打包ZIP
-cd AnyKernel3
-zip -r9 "../SukiSU_Ultra_${FEIL}.zip" ./*
-cd ..
+echo "📦 Creating final zip file: ${FINAL_ZIP_NAME}..."
+cd AnyKernel3 && zip -q -r9 "../${FINAL_ZIP_NAME}" ./* && cd ..
 
-echo "✅ 编译完成！"
-echo "📦 内核包: $WORK_DIR/SukiSU_Ultra_${FEIL}.zip"
-echo "💾 ccache统计:"
-ccache -s
-
-# 用法示例：
-# chmod +x build_kernel.sh
-# ./build_kernel.sh sm8650 oneplus_12 pineapple android14 6.1 Off Off Off On
+# --- Build Summary ---
+echo ""
+echo "================================================="
+echo "               Build Complete!"
+echo "================================================="
+echo "-> Flashable Zip: $WORKSPACE/${FINAL_ZIP_NAME}"
