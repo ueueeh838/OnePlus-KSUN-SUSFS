@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Build SukiSU Ultra - Local Build Script
+# Build SukiSU Ultra - Local Build Script (Corrected Version)
 #
 # Converted from a GitHub Actions workflow into a standalone script.
 # This script is designed to be run on a Debian-based Linux distribution (e.g., Ubuntu).
@@ -72,6 +72,19 @@ WORKSPACE=$PWD/build_workspace
 mkdir -p "$WORKSPACE"
 cd "$WORKSPACE"
 
+# ========================================================================
+# CORRECTED PART: Install dependencies BEFORE trying to use them.
+# ========================================================================
+echo "📦 Installing build dependencies (requires sudo)..."
+sudo apt-get update -qq
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+  python3 git curl ccache libelf-dev \
+  build-essential flex bison libssl-dev \
+  libncurses-dev liblz4-tool zlib1g-dev \
+  libxml2-utils rsync unzip python3-pip
+echo "✅ All dependencies installed successfully."
+# ========================================================================
+
 # Set up and improve ccache
 echo "⚙️ Setting up ccache..."
 export CCACHE_DIR="$HOME/.ccache_${FEIL}"
@@ -90,16 +103,6 @@ echo "🔐 Configuring Git user info..."
 git config --global user.name "Local Builder"
 git config --global user.email "builder@localhost"
 echo "✅ Git configured."
-
-# Install Dependencies
-echo "📦 Installing build dependencies (requires sudo)..."
-sudo apt-get update -qq
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
-  python3 git curl ccache libelf-dev \
-  build-essential flex bison libssl-dev \
-  libncurses-dev liblz4-tool zlib1g-dev \
-  libxml2-utils rsync unzip python3-pip
-echo "✅ All dependencies installed successfully."
 
 # --- Source Code and Tooling ---
 
