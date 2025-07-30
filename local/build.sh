@@ -191,7 +191,7 @@ cd ../.. # Back to $WORKSPACE/kernel_workspace
 
 # Set up SUSFS and other patches
 echo "🔧 Setting up SUSFS and applying patches..."
-cd kernel_workspace
+# cd kernel_workspace 这个不用
 git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${ANDROID_VERSION}-${KERNEL_VERSION}
 git clone https://github.com/Xiaomichael/kernel_patches.git
 git clone https://github.com/ShirkNeko/SukiSU_patch.git
