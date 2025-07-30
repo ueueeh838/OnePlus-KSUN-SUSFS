@@ -1,26 +1,5 @@
 #!/bin/bash
-#
-# Build SukiSU Ultra - Local Build Script (Corrected Version 2)
-#
-# Converted from a GitHub Actions workflow into a standalone script.
-# This script is designed to be run on a Debian-based Linux distribution (e.g., Ubuntu).
-#
-# Usage:
-# 1. Make the script executable:
-#    chmod +x build_sukisu_local.sh
-#
-# 2. Run the script:
-#    ./build_sukisu_local.sh
-#
-# 3. Follow the on-screen prompts to configure your build.
-#
-# 4. (Optional) For Telegram upload, export these variables before running:
-#    export BOT_TOKEN="your_bot_token"
-#    export CHATID="your_chat_id"
-#    export MESSAGE_THREAD_ID="your_topic_id" # Optional, for topics/forums
-#
-
-set -e # Exit immediately if a command exits with a non-zero status.
+set -e
 
 # --- Build Configuration ---
 clear
