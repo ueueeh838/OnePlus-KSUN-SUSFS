@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Build SukiSU Ultra - Local Build Script (Corrected Version)
+# Build SukiSU Ultra - Local Build Script (Corrected Version 2)
 #
 # Converted from a GitHub Actions workflow into a standalone script.
 # This script is designed to be run on a Debian-based Linux distribution (e.g., Ubuntu).
@@ -72,9 +72,7 @@ WORKSPACE=$PWD/build_workspace
 mkdir -p "$WORKSPACE"
 cd "$WORKSPACE"
 
-# ========================================================================
-# CORRECTED PART: Install dependencies BEFORE trying to use them.
-# ========================================================================
+# Install dependencies BEFORE trying to use them.
 echo "📦 Installing build dependencies (requires sudo)..."
 sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
@@ -83,7 +81,6 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends 
   libncurses-dev liblz4-tool zlib1g-dev \
   libxml2-utils rsync unzip python3-pip
 echo "✅ All dependencies installed successfully."
-# ========================================================================
 
 # Set up and improve ccache
 echo "⚙️ Setting up ccache..."
@@ -119,6 +116,8 @@ fi
 
 # Clone Kernel Source
 echo "⬇️ Cloning kernel source code..."
+# If the directory already exists from a previous failed run, remove it for a clean start
+rm -rf kernel_workspace
 mkdir -p kernel_workspace && cd kernel_workspace
 
 echo "🌐 Initializing repo for oneplus/${CPU} on model ${FEIL}..."
@@ -171,7 +170,8 @@ KSU_COMMIT_HASH=$(git ls-remote https://github.com/SukiSU-Ultra/SukiSU-Ultra.git
 export KSUVER_STR="v${KSU_API_VERSION}-${KSU_COMMIT_HASH}-xiaoxiaow"
 echo "ℹ️ KSU Version: $KSUVER ($KSUVER_STR)"
 
-VERSION_DEFINITIONS=$(cat << EOF
+# CORRECTED: Use a more robust method to pass multi-line variable to awk
+export VERSION_DEFINITIONS=$(cat << EOF
 define get_ksu_version_full
 v\\\$1-${KSU_COMMIT_HASH}-xiaoxiaow
 endef
@@ -183,7 +183,7 @@ EOF
 sed -i '/define get_ksu_version_full/,/endef/d' kernel/Makefile
 sed -i '/KSU_VERSION_API :=/d' kernel/Makefile
 sed -i '/KSU_VERSION_FULL :=/d' kernel/Makefile
-awk -v def="$VERSION_DEFINITIONS" '/REPO_OWNER :=/ {print; print def; inserted=1; next} 1 END {if (!inserted) print def}' kernel/Makefile > kernel/Makefile.tmp && mv kernel/Makefile.tmp kernel/Makefile
+awk '/REPO_OWNER :=/ {print; print ENVIRON["VERSION_DEFINITIONS"]; inserted=1; next} 1 END {if (!inserted) print ENVIRON["VERSION_DEFINITIONS"]}' kernel/Makefile > kernel/Makefile.tmp && mv kernel/Makefile.tmp kernel/Makefile
 
 if [ ! -f "kernel/Makefile" ]; then echo "❌ Error: SukiSU setup failed, kernel/Makefile is missing." && exit 1; fi
 echo "✅ SukiSU Ultra configured."
@@ -191,7 +191,6 @@ cd ../.. # Back to $WORKSPACE/kernel_workspace
 
 # Set up SUSFS and other patches
 echo "🔧 Setting up SUSFS and applying patches..."
-# cd kernel_workspace 这个不用
 git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${ANDROID_VERSION}-${KERNEL_VERSION}
 git clone https://github.com/Xiaomichael/kernel_patches.git
 git clone https://github.com/ShirkNeko/SukiSU_patch.git
