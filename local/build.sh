@@ -152,8 +152,8 @@ curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-mai
 
 # Get KSU Version info
 cd KernelSU
-KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10700)
-echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
+KSU_VERSION_COUNT=$(git rev-list --count main)
+export KSUVER=$(expr $KSU_VERSION_COUNT + 10700)
 
 for i in {1..3}; do
   KSU_API_VERSION=$(curl -fsSL "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/Makefile" | \
