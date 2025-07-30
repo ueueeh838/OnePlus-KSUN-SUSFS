@@ -152,40 +152,45 @@ curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-mai
 
 # Get KSU Version info
 cd KernelSU
-KSU_VERSION_COUNT=$(git rev-list --count main)
-export KSUVER=$(expr $KSU_VERSION_COUNT + 10700)
+KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10700)
+echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
 
-KSU_API_VERSION=""
 for i in {1..3}; do
-  KSU_API_VERSION=$(curl -fsSL "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/Makefile" | grep -m1 "KSU_VERSION_API :=" | awk -F'= ' '{print $2}' | tr -d '[:space:]')
+  KSU_API_VERSION=$(curl -fsSL "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/Makefile" | \
+    grep -m1 "KSU_VERSION_API :=" | cut -d'=' -f2 | tr -d '[:space:]')
   [ -n "$KSU_API_VERSION" ] && break || sleep 2
 done
 
 if [ -z "$KSU_API_VERSION" ]; then
-  echo "❌ Error: Could not fetch KSU_API_VERSION from GitHub." >&2
+  echo "Error:KSU_API_VERSION Not Found" >&2
   exit 1
 fi
 
-KSU_COMMIT_HASH=$(git ls-remote https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/susfs-main | awk '{print $1}' | cut -c1-8)
-export KSUVER_STR="v${KSU_API_VERSION}-${KSU_COMMIT_HASH}-xiaoxiaow"
-echo "ℹ️ KSU Version: $KSUVER ($KSUVER_STR)"
+KSU_COMMIT_HASH=$(git ls-remote https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/susfs-main | cut -f1 | cut -c1-8)
+KSU_VERSION_FULL="v${KSU_API_VERSION}-${KSU_COMMIT_HASH}-xiaoxiaow"
 
-# CORRECTED: Use a more robust method to pass multi-line variable to awk
-export VERSION_DEFINITIONS=$(cat << EOF
-define get_ksu_version_full
-v\\\$1-${KSU_COMMIT_HASH}-xiaoxiaow
-endef
-KSU_VERSION_API := ${KSU_API_VERSION}
-KSU_VERSION_FULL := ${KSUVER_STR}
-EOF
-)
-
+# 删除旧定义
 sed -i '/define get_ksu_version_full/,/endef/d' kernel/Makefile
 sed -i '/KSU_VERSION_API :=/d' kernel/Makefile
 sed -i '/KSU_VERSION_FULL :=/d' kernel/Makefile
-awk '/REPO_OWNER :=/ {print; print ENVIRON["VERSION_DEFINITIONS"]; inserted=1; next} 1 END {if (!inserted) print ENVIRON["VERSION_DEFINITIONS"]}' kernel/Makefile > kernel/Makefile.tmp && mv kernel/Makefile.tmp kernel/Makefile
 
-if [ ! -f "kernel/Makefile" ]; then echo "❌ Error: SukiSU setup failed, kernel/Makefile is missing." && exit 1; fi
+# 插入新定义在 REPO_OWNER := 之后
+TMP_FILE=$(mktemp)
+while IFS= read -r line; do
+  echo "$line" >> "$TMP_FILE"
+  if echo "$line" | grep -q 'REPO_OWNER :='; then
+    cat >> "$TMP_FILE" <<EOF
+define get_ksu_version_full
+v\\\$\$1-${KSU_COMMIT_HASH}-xiaoxiaow
+endef
+
+KSU_VERSION_API := ${KSU_API_VERSION}
+KSU_VERSION_FULL := ${KSU_VERSION_FULL}
+EOF
+  fi
+done < kernel/Makefile
+mv "$TMP_FILE" kernel/Makefile
+
 echo "✅ SukiSU Ultra configured."
 cd ../.. # Back to $WORKSPACE/kernel_workspace
 
