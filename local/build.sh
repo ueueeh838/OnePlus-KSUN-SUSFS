@@ -62,6 +62,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends 
   build-essential flex bison libssl-dev \
   libncurses-dev liblz4-tool zlib1g-dev \
   libxml2-utils rsync unzip python3-pip
+clear
 echo "✅ All dependencies installed successfully."
 
 # Set up and improve ccache
