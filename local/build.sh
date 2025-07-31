@@ -32,6 +32,7 @@ bbr=$(ask "Enable BBR congestion control algorithm? (On/Off)" "Off")
 proxy=$(ask "Add proxy performance optimization? (On/Off)" "On")
 
 # --- Display Configuration Summary ---
+clear
 echo ""
 echo "================================================="
 echo "         Configuration Summary"
@@ -46,6 +47,7 @@ echo "BBR Enabled        : $bbr"
 echo "Proxy Opts Enabled : $proxy"
 echo "================================================="
 read -p "Press Enter to begin the build process..."
+clear
 
 # --- Environment Setup ---
 WORKSPACE=$PWD/build_workspace
