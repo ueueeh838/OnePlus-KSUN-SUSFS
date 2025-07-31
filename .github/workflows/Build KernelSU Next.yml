@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - 'sm8650'
+          - 'sm8635'
           - 'sm8550'
           - 'sm8450'
           - 'sm8475'
@@ -28,6 +29,7 @@ on:
           - 'oneplus_13r'
           - 'oneplus_pad2'
           - 'oneplus_pad_pro'
+          - 'oneplus_nord_5'
           - 'oneplus_11'
           - 'oneplus_12r'
           - 'oneplus_ace2_pro'
@@ -57,7 +59,7 @@ on:
         default: 'pineapple'
         
       ANDROID_VERSION:
-        description: "内核安卓版本"
+        description: "KMI安卓版本"
         required: true
         type: choice
         options:
