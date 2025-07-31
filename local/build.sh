@@ -1,4 +1,5 @@
 #!/bin/bash
+#export all_proxy=socks5://192.168.x.x:x/
 set -e
 
 # --- Build Configuration ---
