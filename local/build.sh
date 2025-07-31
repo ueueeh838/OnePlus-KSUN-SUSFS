@@ -62,17 +62,19 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends 
 echo "✅ All dependencies installed successfully."
 
 # Set up and improve ccache
+# Generous size for local builds
 echo "⚙️ Setting up ccache..."
 export CCACHE_DIR="$HOME/.ccache_${FEIL}"
 export CCACHE_COMPILERCHECK="%compiler% -dumpmachine; %compiler% -dumpversion"
 export CCACHE_NOHASHDIR="true"
 export CCACHE_HARDLINK="true"
-export CCACHE_MAXSIZE="20G" # Generous size for local builds
+export CCACHE_MAXSIZE="20G"
 export PATH="/usr/lib/ccache:$PATH"
 mkdir -p "$CCACHE_DIR"
 echo "✅ ccache directory set to: $CCACHE_DIR"
 ccache -M "$CCACHE_MAXSIZE"
-ccache -z # Clear statistics for a clean run summary
+ccache -z
+# Clear statistics for a clean run summary
 
 # Configure Git for repo tool
 echo "🔐 Configuring Git user info..."
@@ -119,7 +121,8 @@ sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/common/scripts/s
 sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
 sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
 echo "✅ Kernel source cloned and configured."
-cd .. # Back to $WORKSPACE
+cd ..
+# Back to $WORKSPACE
 
 # --- Kernel Customization ---
 cd kernel_workspace
@@ -171,7 +174,8 @@ done < kernel/Makefile
 mv "$TMP_FILE" kernel/Makefile
 
 echo "✅ SukiSU Ultra configured."
-cd ../.. # Back to $WORKSPACE/kernel_workspace
+cd ../..
+# Back to $WORKSPACE/kernel_workspace
 
 # Set up SUSFS and other patches
 echo "🔧 Setting up SUSFS and applying patches..."
@@ -222,7 +226,8 @@ if [ "$lz4kd" = "On" ]; then
   patch -p1 -F 3 < lz4k_oplus.patch || true
 fi
 echo "✅ All patches applied."
-cd ../.. # Back to $WORKSPACE/kernel_workspace
+cd ../..
+# Back to $WORKSPACE/kernel_workspace
 
 # Configure Kernel Options
 echo "⚙️ Configuring kernel build options (defconfig)..."
@@ -315,7 +320,8 @@ fi
 
 sed -i 's/check_defconfig//' "$WORKSPACE/kernel_workspace/kernel_platform/common/build.config.gki"
 echo "✅ Kernel defconfig updated."
-cd ../.. # Back to $WORKSPACE
+cd ../..
+# Back to $WORKSPACE
 
 # --- Build and Package ---
 
@@ -362,7 +368,7 @@ if [ "$KPM" = 'On' ]; then
     curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
     chmod +x patch_linux
     cp "$WORKSPACE/AnyKernel3/Image" ./Image
-    ./patch_linux # Patches 'Image' and creates 'oImage'
+    ./patch_linux
     mv oImage "$WORKSPACE/AnyKernel3/Image"
     cd .. && rm -rf kpm_patch_temp
     echo "✅ KPM patch applied."
@@ -388,3 +394,13 @@ echo "================================================="
 echo "               Build Complete!"
 echo "================================================="
 echo "-> Flashable Zip: $WORKSPACE/${FINAL_ZIP_NAME}"
+
+if [ "$lz4kd" = "On" ]; then
+    ZRAM_KO_PATH=$(find "$WORKSPACE/kernel_workspace/kernel_platform/common/out/" -name "zram.ko" | head -n 1)
+    if [ -n "$ZRAM_KO_PATH" ]; then
+        cp "$ZRAM_KO_PATH" "$WORKSPACE/"
+        echo "-> zram.ko module: $WORKSPACE/zram.ko"
+    fi
+fi
+echo "================================================="
+echo ""
