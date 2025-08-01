@@ -459,7 +459,7 @@ jobs:
           MESSAGE_THREAD_ID: ${{secrets.MESSAGE_THREAD_ID}}
           KernelVer: ${{ github.event.inputs.ANDROID_VERSION}}-${{ github.event.inputs.KERNEL_VERSION }}
           DEVICE: ${{ github.event.inputs.FEIL }}
-          KPM: ${{ github.event.inputs.KPM }}
+          KPM: Not Support
           LZ4KD: ${{ github.event.inputs.lz4kd }}
           BBR: ${{ github.event.inputs.bbr }}
           KSU_VAR: "NEXT"
