@@ -1,4 +1,4 @@
-name: Build OnePlus SukiSU Ultra
+name: testing
 on:
   workflow_dispatch:
     inputs:
@@ -8,6 +8,7 @@ on:
         required: true
         type: choice
         options:
+          - 'sm8750'
           - 'sm8650'
           - 'sm8635'
           - 'sm8550'
@@ -23,6 +24,7 @@ on:
         required: true
         type: choice
         options:
+          - 'oneplus_ace5_pro'
           - 'oneplus_12'
           - 'oneplus_ace3_pro'
           - 'oneplus_ace5'
@@ -51,6 +53,7 @@ on:
         required: true
         type: choice
         options:
+          - 'sun'
           - 'pineapple'
           - 'kalama'
           - 'waipio'
@@ -63,6 +66,7 @@ on:
         required: true
         type: choice
         options:
+          - 'android15'
           - 'android14'
           - 'android13'
           - 'android12'
@@ -73,6 +77,7 @@ on:
         required: true
         type: choice
         options:
+          - '6.6'
           - '6.1'
           - '5.15'
           - '5.10'
