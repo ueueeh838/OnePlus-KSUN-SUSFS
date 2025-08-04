@@ -463,3 +463,6 @@ jobs:
           LZ4KD: ${{ github.event.inputs.lz4kd }}
           BBR: ${{ github.event.inputs.bbr }}
           KSU_VAR: "NEXT"
+          
+      - name: 📊 Post-build disk check (构建后空间检查)
+        run: df -h
