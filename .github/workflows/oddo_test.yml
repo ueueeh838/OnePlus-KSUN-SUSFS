@@ -1,4 +1,4 @@
-name: testing
+name: testing oddo devices
 on:
   workflow_dispatch:
     inputs:
@@ -8,80 +8,41 @@ on:
         required: true
         type: choice
         options:
-          - 'sm8750'
           - 'sm8650'
-          - 'sm8635'
-          - 'sm8550'
-          - 'sm8450'
-          - 'sm8475'
-          - 'sm7675'
-          - 'sm7550'
-          - 'sm6375'
-        default: 'sm8750'
+        default: 'sm8650'
         
       FEIL:
         description: "手机型号"
         required: true
         type: choice
         options:
-          - 'oneplus_ace5_pro'
-          - 'oneplus_12'
-          - 'oneplus_ace3_pro'
-          - 'oneplus_ace5'
-          - 'oneplus_13r'
-          - 'oneplus_pad2'
-          - 'oneplus_pad_pro'
-          - 'oneplus_nord_5'
-          - 'oneplus_11'
-          - 'oneplus_12r'
-          - 'oneplus_ace2_pro'
-          - 'oneplus_ace3'
-          - 'oneplus_open'
-          - 'oneplus_10t'
-          - 'oneplus_11r'
-          - 'oneplus_ace2'
-          - 'oneplus_ace_pro'
-          - 'oneplus_10_pro'
-          - 'oneplus_ace_3v'
-          - 'onrplus_nord_4'
-          - 'oneplus_nord_ce4_lite_5g'
-          - 'oneplus_nord_ce4'
-        default: 'oneplus_ace5_pro'
+          - 'oppo_find_x7'
+          - 'oppo_find_x7_ultra'
+        default: 'oppo_find_x7_ultra'
         
       CPUD:
         description: "处理器代号"
         required: true
         type: choice
         options:
-          - 'sun'
           - 'pineapple'
-          - 'kalama'
-          - 'waipio'
-          - 'crow'
-          - 'blair'
-        default: 'sun'
+        default: 'pineapple'
         
       ANDROID_VERSION:
         description: "KMI安卓版本"
         required: true
         type: choice
         options:
-          - 'android15'
           - 'android14'
-          - 'android13'
-          - 'android12'
-        default: 'android15'
+        default: 'android14'
         
       KERNEL_VERSION:
         description: "内核版本"
         required: true
         type: choice
         options:
-          - '6.6'
           - '6.1'
-          - '5.15'
-          - '5.10'
-        default: '6.6'
+        default: '6.1'
         
       KPM:
        description: "是否启用KPM"
@@ -99,7 +60,7 @@ on:
        options:
           - 'On'
           - 'Off'
-       default: 'On'
+       default: 'Off'
        
       bbr:
        description: "是否启用bbr算法(优化上行数据, 对手机日用无太大意义甚至可能负优化)"
@@ -302,21 +263,7 @@ jobs:
             cp -r ../SukiSU_patch/other/zram/lz4k/crypto/* ./common/crypto
             cp -r ../SukiSU_patch/other/zram/lz4k_oplus ./common/lib/
           fi
-
-          KERNEL_VERSION="${{ github.event.inputs.KERNEL_VERSION }}"
-          file="${{ github.event.inputs.FEIL }}"
-          TRUSTY_EXISTS="false"
-          if [[ "$KERNEL_VERSION" == "6.6" ]]; then
-            if grep -q 'common-modules/trusty' "$GITHUB_WORKSPACE/.repo/manifests_fallback/${file}.xml"; then
-              TRUSTY_EXISTS="true"
-            fi
-            echo "trusty_exists=$TRUSTY_EXISTS" >> $GITHUB_OUTPUT
-            if [[ "$TRUSTY_EXISTS" == "false" ]]; then
-              echo "修复内核版本6.6部分机型缺失Trusty OS导致的susfs的报错"
-              sed -i 's/-32,12 +32,38/-32,11 +32,37/g' 50_add_susfs_in_gki-${{ env.KANDROID_VERSION }}-${KERNEL_VERSION}.patch
-              sed -i '/#include <trace\/hooks\/fs.h>/d' 50_add_susfs_in_gki-${{ env.KANDROID_VERSION }}-${KERNEL_VERSION}.patch
-            fi
-          fi
+          
           echo "🔧 应用补丁..."
           cd ./common
           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
@@ -339,25 +286,6 @@ jobs:
           fi
           
           echo "✅ 所有补丁应用完成"
-
-      - name: Apply Convert HMBIRD_OGKI to HMBIRD_GKI
-        if: ${{ env.KERNEL_VERSION == '6.6' }}
-        run: |
-          cd kernel_workspace/kernel_platform/common
-          sed -i '1iobj-y += hmbird_patch.o' drivers/Makefile
-          wget https://github.com/Xiaomichael/kernel_patches/raw/patches/oneplus/hmbird/hmbird_patch.patch
-          echo "正在打OGKI转换GKI补丁"
-          patch -p1 -F 3 < hmbird_patch.patch
-          echo "OGKI转换GKI_patch完成"
-          
-      - name: "⚙️ Add sched_ext | 添加风驰内核(仅6.6内核)"
-        if: ${{ github.event.inputs.KERNEL_VERSION == '6.6' }}
-        run: |
-          cd kernel_workspace/kernel_platform/
-          git clone https://github.com/HanKuCha/sched_ext.git
-          cp -r ./sched_ext/* ./common/kernel/sched
-          rm -rf ./sched_ext/.git
-          cd common/kernel/sched
 
       - name: "⚙️ Configure Kernel Options | 配置内核选项"
         run: |
@@ -466,13 +394,7 @@ jobs:
             sudo apt install libelf-dev
             cd kernel_workspace/kernel_platform/common
             make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out KCFLAGS+=-O2 gki_defconfig all
-          elif [ "${{ github.event.inputs.KERNEL_VERSION }}" == "6.6" ]; then
-            export KBUILD_BUILD_VERSION=1
-            export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r510928/bin:$PATH"
-            export PATH="/usr/lib/ccache:$PATH"
-            sudo apt install libelf-dev
-            cd kernel_workspace/kernel_platform/common
-            make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld HOSTLD=ld.lld O=out KCFLAGS+=-O2 gki_defconfig all
+            
           elif [ "${{ github.event.inputs.KERNEL_VERSION }}" == "5.15" ]; then
             export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r450784e/bin:$PATH"
             export PATH="/usr/lib/ccache:$PATH"
@@ -541,3 +463,46 @@ jobs:
         with:
           name: ${{ steps.set_name.outputs.ARTIFACT_NAME }}
           path: ./AnyKernel3/*
+         
+      - name: "📝 Find zram.ko & crypto_zstdn.ko | 查找 zram.ko & crypto_zstdn.ko"
+        if: ${{ github.event.inputs.lz4kd == 'On' }}
+        run: |
+          find -name zram.ko
+          find -name crypto_zstdn.ko
+          
+      - name: "📤 Upload zram.ko | 上传 zram.ko"
+        if: ${{ github.event.inputs.lz4kd == 'On' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: zram.ko
+          path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
+
+      - name: "🤖 Get bot script | 获取 bot 脚本"
+        uses: actions/checkout@v4
+        with:
+          path: bot
+
+      - name: "📤 Upload to telegram | 上传至Telegram群组"
+        run: |
+          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            echo "📤 正在上传到Telegram..."
+            cd AnyKernel3
+            zip -q -r "../${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip" ./*
+            cd ..
+            pip3 install telethon
+            python3 ./bot/script/buildbot.py "./${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip"
+            echo "✅ 文件已上传到Telegram"
+          fi
+        env:
+          CHATID: ${{secrets.CHATID}}
+          BOT_TOKEN: ${{secrets.BOT_TOKEN}}
+          MESSAGE_THREAD_ID: ${{secrets.MESSAGE_THREAD_ID}}
+          KernelVer: ${{ github.event.inputs.ANDROID_VERSION}}-${{ github.event.inputs.KERNEL_VERSION }}
+          DEVICE: ${{ github.event.inputs.FEIL }}
+          KPM: ${{ github.event.inputs.KPM }}
+          LZ4KD: ${{ github.event.inputs.lz4kd }}
+          BBR: ${{ github.event.inputs.bbr }}
+          KSU_VAR: "SukiSU"
+          
+      - name: 📊 Post-build disk check (构建后空间检查)
+        run: df -h
