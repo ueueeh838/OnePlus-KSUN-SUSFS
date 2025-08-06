@@ -18,7 +18,7 @@ on:
         options:
           - 'oppo_find_x7'
           - 'oppo_find_x7_ultra'
-        default: 'oppo_find_x7_ultra'
+        default: 'oppo_find_x7'
         
       CPUD:
         description: "处理器代号"
