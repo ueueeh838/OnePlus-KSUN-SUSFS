@@ -438,6 +438,32 @@ jobs:
           name: zram.ko
           path: ./kernel_workspace/kernel_platform/common/out/drivers/block/zram/zram.ko
 
+      # - name: "📦 Package files | 打包文件"
+        # run: |
+            # echo "📦📤 正在打包文件..."
+            # cd AnyKernel3
+            # zip -q -r "../${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip" ./*
+            # cd ..
+            # cat > release.txt << 'EOF'
+            # \# ${{ github.event.inputs.FEIL }}
+            # ```
+            # 构建时间：$(TZ=Asia/Shanghai date)
+            # 内核版本：${{ github.event.inputs.ANDROID_VERSION}}-${{ github.event.inputs.KERNEL_VERSION }}
+            # KSU 版本：${{env.KSUVER_STR}}(${{env.KSUVER}})
+            # KPM 状态：${{ github.event.inputs.KPM }}
+            # LZ4KD 状态: ${{ github.event.inputs.lz4kd }}
+            # ```
+            # EOF
+
+      # - name: "📤 Upload to telegram | 上传至Telegram群组"
+        # uses: puernya/tg-bot-upload@v1
+        # with:
+          # bot-id: ${{ secrets.BOT_TOKEN }}
+          # chat-id: ${{ secrets.CHATID }}
+          # topic-id: ${{ secrets.MESSAGE_THREAD_ID }} 
+          # file-path: "${{ steps.set_name.outputs.ARTIFACT_NAME }}.zip"
+          # caption-path: release.txt
+          
       - name: "🤖 Get bot script | 获取 bot 脚本"
         uses: actions/checkout@v4
         with:
