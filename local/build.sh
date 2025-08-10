@@ -50,7 +50,9 @@ read -p "Press Enter to begin the build process..."
 clear
 
 # --- Environment Setup ---
+echo "📦 Preparing the files..."
 WORKSPACE=$PWD/build_workspace
+sudo rm -rf "$WORKSPACE"
 mkdir -p "$WORKSPACE"
 cd "$WORKSPACE"
 
