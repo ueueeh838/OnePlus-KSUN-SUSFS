@@ -123,9 +123,9 @@ sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
 sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/common/scripts/setlocalversion
 sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/msm-kernel/scripts/setlocalversion
 sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/external/dtc/scripts/setlocalversion
-sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion
-sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
-sed -i '$s|echo "\$res"|echo "-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
+sed -i '$s|echo "\$res"|echo "-$ANDROID_VERSION-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion
+sed -i '$s|echo "\$res"|echo "-$ANDROID_VERSION-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
+sed -i '$s|echo "\$res"|echo "-$ANDROID_VERSION-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
 echo "✅ Kernel source cloned and configured."
 cd ..
 # Back to $WORKSPACE
