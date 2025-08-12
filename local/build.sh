@@ -104,7 +104,7 @@ fi
 # Clone Kernel Source
 echo "⬇️ Cloning kernel source code..."
 # If the directory already exists from a previous failed run, remove it for a clean start
-rm -rf kernel_workspace
+sudo rm -rf kernel_workspace
 mkdir -p kernel_workspace && cd kernel_workspace
 
 echo "🌐 Initializing repo for oneplus/${CPU} on model ${FEIL}..."
@@ -113,6 +113,8 @@ repo init -u https://github.com/Xiaomichael/kernel_manifest.git -b refs/heads/on
 echo "🔄 Syncing repositories (using $(nproc --all) threads)..."
 repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
 
+export adv=$ANDROID_VERSION
+echo "-$adv-oki-xiaoxiaow"
 echo "🔧 Cleaning up and modifying version strings..."
 rm -f kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports to remove from common!"
 rm -f kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports to remove from msm-kernel!"
@@ -123,9 +125,9 @@ sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
 sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/common/scripts/setlocalversion
 sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/msm-kernel/scripts/setlocalversion
 sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/external/dtc/scripts/setlocalversion
-sed -i '$s|echo "\$res"|echo "-$ANDROID_VERSION-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion
-sed -i '$s|echo "\$res"|echo "-$ANDROID_VERSION-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
-sed -i '$s|echo "\$res"|echo "-$ANDROID_VERSION-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
+sed -i '$s|echo "\$res"|echo "-$adv-oki-xiaoxiaow"|' kernel_platform/common/scripts/setlocalversion
+sed -i '$s|echo "\$res"|echo "-$adv-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
+sed -i '$s|echo "\$res"|echo "-$adv-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
 echo "✅ Kernel source cloned and configured."
 cd ..
 # Back to $WORKSPACE
