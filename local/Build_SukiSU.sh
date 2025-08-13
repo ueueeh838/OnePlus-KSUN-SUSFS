@@ -5,7 +5,7 @@ set -e
 # --- Build Configuration ---
 clear
 echo "================================================="
-echo "  SukiSU Ultra Local Kernel Build Configuration  "
+echo "  SukiSU Ultra OnePlus Kernel Build Configuration  "
 echo "================================================="
 echo "Press Enter to accept the default value in [brackets]."
 echo ""

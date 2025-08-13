@@ -5,7 +5,7 @@ set -e
 # --- Build Configuration ---
 clear
 echo "================================================="
-echo "  KernelSU NEXT Local Kernel Build Configuration  "
+echo "  KernelSU Next OnePlus Kernel Build Configuration  "
 echo "================================================="
 echo "Press Enter to accept the default value in [brackets]."
 echo ""
@@ -133,8 +133,8 @@ cd ..
 # --- Kernel Customization ---
 cd kernel_workspace
 
-# Setup KernelSU NEXT
-echo "⚡ Setting up KernelSU NEXT..."
+# Setup KernelSU Next
+echo "⚡ Setting up KernelSU Next..."
 cd kernel_platform
 curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs
 
@@ -144,7 +144,7 @@ KSU_VERSION=$(expr $(curl -sI "https://api.github.com/repos/KernelSU-Next/Kernel
 export KSUVER=$(expr $KSU_VERSION)
 sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
 
-echo "✅ KernelSU NEXT configured."
+echo "✅ KernelSU Next configured."
 cd ../..
 # Back to $WORKSPACE/kernel_workspace
 
@@ -206,7 +206,7 @@ DEFCONFIG_PATH="$WORKSPACE/kernel_workspace/kernel_platform/common/arch/arm64/co
 
 cat <<EOT >> "$DEFCONFIG_PATH"
 
-#--- KernelSU NEXT & SUSFS Custom Configs ---
+#--- KernelSU Next & SUSFS Custom Configs ---
 CONFIG_KSU=y
 CONFIG_KSU_KPROBES_HOOK=n
 CONFIG_KSU_SUSFS=y
