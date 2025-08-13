@@ -141,7 +141,7 @@ curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/next-susfs/k
 # Get KSU Version info
 cd KernelSU-Next
 KSU_VERSION=$(expr $(curl -sI "https://api.github.com/repos/KernelSU-Next/KernelSU-Next/commits?sha=next&per_page=1" | grep -i "link:" | sed -n 's/.*page=\([0-9]*\)>; rel="last".*/\1/p') "+" 10200)
-export KSUVER=$(expr $KSU_VERSION + 10200)
+export KSUVER=$(expr $KSU_VERSION)
 sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
 
 echo "✅ KernelSU NEXT configured."
@@ -333,11 +333,11 @@ cp "$IMAGE_PATH" ./AnyKernel3/Image
 # --- Finalize and Upload ---
 
 if [ "$lz4kd" = "On" ]; then
-  ARTIFACT_NAME="AnyKernel3_KernelSU_NEXT_lz4kd_${KSUVER}_${FEIL}"
+  ARTIFACT_NAME="AnyKernel3_KernelSU_Next_lz4kd_${KSUVER}_${FEIL}"
 elif [ "$KERNEL_VERSION" = "6.1" ]; then
-  ARTIFACT_NAME="AnyKernel3_KernelSU_NEXT_lz4_zstd_${KSUVER}_${FEIL}"
+  ARTIFACT_NAME="AnyKernel3_KernelSU_Next_lz4_zstd_${KSUVER}_${FEIL}"
 else
-  ARTIFACT_NAME="AnyKernel3_KernelSU_NEXT_${KSUVER}_${FEIL}"
+  ARTIFACT_NAME="AnyKernel3_KernelSU_Next_${KSUVER}_${FEIL}"
 fi
 FINAL_ZIP_NAME="${ARTIFACT_NAME}.zip"
 
