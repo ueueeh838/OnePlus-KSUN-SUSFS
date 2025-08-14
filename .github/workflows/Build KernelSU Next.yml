@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - 'sm8650'
+          - 'mt6989'
           - 'sm8635'
           - 'sm8550'
           - 'sm8450'
@@ -29,6 +30,7 @@ on:
           - 'oneplus_13r'
           - 'oneplus_pad2'
           - 'oneplus_pad_pro'
+          - 'oneplus_ace5_race'
           - 'oneplus_nord_5'
           - 'oneplus_11'
           - 'oneplus_12r'
