@@ -108,7 +108,7 @@ on:
        default: 'Off'
 
       proxy:
-       description: "是否添加代理性能优化"
+       description: "是否添加代理性能优化(一加ace5至尊版跑的时候请关闭否则出现恶性bug)"
        required: true
        type: choice
        options:
