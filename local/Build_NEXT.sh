@@ -21,7 +21,7 @@ ask() {
 }
 
 # --- Interactive Inputs ---
-CPU=$(ask "Enter CPU branch (e.g., sm8650, sm8550)" "sm8650")
+CPU=$(ask "Enter CPU branch (e.g., sm8650, sm8550, sm8475)" "sm8650")
 FEIL=$(ask "Enter phone model (e.g., oneplus_12, oneplus_11)" "oneplus_12")
 CPUD=$(ask "Enter processor codename (e.g., pineapple, kalama, waipio)" "pineapple")
 ANDROID_VERSION=$(ask "Enter kernel Android version (android14, android13, android12)" "android14")
