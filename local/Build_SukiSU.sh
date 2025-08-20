@@ -385,11 +385,11 @@ fi
 # --- Finalize and Upload ---
 
 if [ "$lz4kd" = "On" ]; then
-  ARTIFACT_NAME="AnyKernel3_SukiSU_Ultra_lz4kd_${KSUVER}_${FEIL}"
+  ARTIFACT_NAME="${FEIL}_SukiSU_Ultra_lz4kd_${KSUVER}"
 elif [ "$KERNEL_VERSION" = "6.1" ]; then
-  ARTIFACT_NAME="AnyKernel3_SukiSU_Ultra_lz4_zstd_${KSUVER}_${FEIL}"
+  ARTIFACT_NAME="${FEIL}_SukiSU_Ultra_lz4_zstd_${KSUVER}"
 else
-  ARTIFACT_NAME="AnyKernel3_SukiSU_Ultra_${KSUVER}_${FEIL}"
+  ARTIFACT_NAME="${FEIL}_SukiSU_Ultra_${KSUVER}"
 fi
 FINAL_ZIP_NAME="${ARTIFACT_NAME}.zip"
 

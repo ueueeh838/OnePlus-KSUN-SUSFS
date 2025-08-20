@@ -333,11 +333,11 @@ cp "$IMAGE_PATH" ./AnyKernel3/Image
 # --- Finalize and Upload ---
 
 if [ "$lz4kd" = "On" ]; then
-  ARTIFACT_NAME="AnyKernel3_KernelSU_Next_lz4kd_${KSUVER}_${FEIL}"
+  ARTIFACT_NAME="${FEIL}_KernelSU_Next_lz4kd_${KSUVER}"
 elif [ "$KERNEL_VERSION" = "6.1" ]; then
-  ARTIFACT_NAME="AnyKernel3_KernelSU_Next_lz4_zstd_${KSUVER}_${FEIL}"
+  ARTIFACT_NAME="${FEIL}_KernelSU_Next_lz4_zstd_${KSUVER}"
 else
-  ARTIFACT_NAME="AnyKernel3_KernelSU_Next_${KSUVER}_${FEIL}"
+  ARTIFACT_NAME="${FEIL}_KernelSU_Next_${KSUVER}"
 fi
 FINAL_ZIP_NAME="${ARTIFACT_NAME}.zip"
 
