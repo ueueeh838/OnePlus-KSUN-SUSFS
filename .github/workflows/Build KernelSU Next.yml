@@ -437,13 +437,13 @@ jobs:
          path: ./AnyKernel3/*
 
       - name: "📝 Find zram.ko & crypto_zstdn.ko | 查找 zram.ko & crypto_zstdn.ko"
-        if: ${{ github.event.inputs.lz4kd == 'On' }}
+        # if: ${{ github.event.inputs.lz4kd == 'On' }}
         run: |
           find -name zram.ko
           find -name crypto_zstdn.ko
           
       - name: "📤 Upload zram.ko | 上传 zram.ko"
-        if: ${{ github.event.inputs.lz4kd == 'On' }}
+        # if: ${{ github.event.inputs.lz4kd == 'On' }}
         uses: actions/upload-artifact@v4
         with:
           name: zram.ko

@@ -403,13 +403,12 @@ echo "               Build Complete!"
 echo "================================================="
 echo "-> Flashable Zip: $WORKSPACE/${FINAL_ZIP_NAME}"
 
-if [ "$lz4kd" = "On" ]; then
-    ZRAM_KO_PATH=$(find "$WORKSPACE/kernel_workspace/kernel_platform/common/out/" -name "zram.ko" | head -n 1)
-    if [ -n "$ZRAM_KO_PATH" ]; then
-        cp "$ZRAM_KO_PATH" "$WORKSPACE/"
-        echo "-> zram.ko module: $WORKSPACE/zram.ko"
-    fi
+ZRAM_KO_PATH=$(find "$WORKSPACE/kernel_workspace/kernel_platform/common/out/" -name "zram.ko" | head -n 1)
+if [ -n "$ZRAM_KO_PATH" ]; then
+    cp "$ZRAM_KO_PATH" "$WORKSPACE/"
+    echo "-> zram.ko module: $WORKSPACE/zram.ko"
 fi
+
 echo "================================================="
 echo ""
 
