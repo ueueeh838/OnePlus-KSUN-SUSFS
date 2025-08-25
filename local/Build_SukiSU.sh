@@ -27,9 +27,9 @@ CPUD=$(ask "Enter processor codename (e.g., pineapple, kalama, waipio)" "pineapp
 ANDROID_VERSION=$(ask "Enter kernel Android version (android14, android13, android12)" "android14")
 KERNEL_VERSION=$(ask "Enter kernel version (6.1, 5.15, 5.10)" "6.1")
 KPM=$(ask "Enable KPM (Kernel Patch Manager)? (On/Off)" "Off")
-lz4kd=$(ask "Enable lz4kd? (6.1 uses lz4+zstd if Off) (On/Off)" "Off")
+lz4kd=$(ask "Enable lz4kd? (6.1 uses lz4 + zstd if Off) (On/Off)" "Off")
 bbr=$(ask "Enable BBR congestion control algorithm? (On/Off)" "Off")
-proxy=$(ask "Add proxy performance optimization? (On/Off)" "On")
+proxy=$(ask "Add proxy performance optimization? (if oneplus_ace5_race must be off!!!!) (On/Off)" "On")
 
 # --- Display Configuration Summary ---
 clear
