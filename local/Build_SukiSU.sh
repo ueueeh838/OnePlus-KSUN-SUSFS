@@ -412,4 +412,5 @@ fi
 echo "================================================="
 echo ""
 
+echo "📊 Displaying disk statistics:"
 df -h
