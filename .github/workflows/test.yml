@@ -1,4 +1,4 @@
-name: test TRACEPOINT_HOOK
+name: Test TRACEPOINT_HOOK
 on:
   workflow_dispatch:
     inputs:
@@ -335,11 +335,15 @@ jobs:
       - name: "⚙️ Configure Kernel Options | 配置内核选项"
         run: |
           echo "⚙️ 正在配置内核编译选项..."
+          
           cd kernel_workspace/kernel_platform
+          
           # Add KSU configuration settings
           echo "📦 启用 Manual Hook..."
           echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
+          
           if [ "${{ github.event.inputs.KPM }}" == "On" ]; then
+            echo "📦 启用 KPM..."
             echo "CONFIG_KPM=y" >> ./common/arch/arm64/configs/gki_defconfig
           fi
           
@@ -496,11 +500,11 @@ jobs:
         id: set_name
         run: |
           if [ "${{ github.event.inputs.lz4kd }}" = "On" ]; then
-            echo "ARTIFACT_NAME=AnyKernel3_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
+            echo "ARTIFACT_NAME=${{ github.event.inputs.FEIL }}_SukiSU_Ultra_lz4kd_${{ env.KSUVER }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
-            echo "ARTIFACT_NAME=AnyKernel3_SukiSU_Ultra_lz4_zstd_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
+            echo "ARTIFACT_NAME=${{ github.event.inputs.FEIL }}_SukiSU_Ultra_lz4_zstd_${{ env.KSUVER }}" >> $GITHUB_OUTPUT
           else
-            echo "ARTIFACT_NAME=AnyKernel3_SukiSU_Ultra_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}" >> $GITHUB_OUTPUT
+            echo "ARTIFACT_NAME=${{ github.event.inputs.FEIL }}_SukiSU_Ultra_${{ env.KSUVER }}" >> $GITHUB_OUTPUT
           fi
 
       - name: "📤 Upload AnyKernel3 | 上传 AnyKernel3"
@@ -510,13 +514,13 @@ jobs:
           path: ./AnyKernel3/*
          
       - name: "📝 Find zram.ko & crypto_zstdn.ko | 查找 zram.ko & crypto_zstdn.ko"
-        if: ${{ github.event.inputs.lz4kd == 'On' }}
+        # if: ${{ github.event.inputs.lz4kd == 'On' }}
         run: |
           find -name zram.ko
           find -name crypto_zstdn.ko
           
       - name: "📤 Upload zram.ko | 上传 zram.ko"
-        if: ${{ github.event.inputs.lz4kd == 'On' }}
+        # if: ${{ github.event.inputs.lz4kd == 'On' }}
         uses: actions/upload-artifact@v4
         with:
           name: zram.ko
