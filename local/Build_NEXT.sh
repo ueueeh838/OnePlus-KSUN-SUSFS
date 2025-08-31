@@ -112,7 +112,7 @@ echo "🔄 Syncing repositories (using $(nproc --all) threads)..."
 repo sync -c -j$(nproc --all) --no-tags --no-clone-bundle --force-sync
 
 export adv=$ANDROID_VERSION
-echo "-$adv-oki-xiaoxiaow"
+echo "kernel_name: -$adv-oki-xiaoxiaow"
 echo "🔧 Cleaning up and modifying version strings..."
 rm -f kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports to remove from common!"
 rm -f kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports to remove from msm-kernel!"
