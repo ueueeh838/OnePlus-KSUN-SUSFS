@@ -278,6 +278,8 @@ jobs:
           fi
           
           ./sukisu_setup.bin
+          rm -rf ./sukisu_setup.bin
+          
           echo "✅ SukiSU Ultra配置完成"
           
       - name: "🔧 Set up SUSFS | 配置 SUSFS"
