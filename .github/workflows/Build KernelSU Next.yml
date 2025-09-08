@@ -134,8 +134,8 @@ jobs:
       - name: "⚙️ Setup Cache Env | 设置缓存环境"
         run: |
           echo "🔧 正在设置机型隔离缓存目录..."
-          echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}}_NEXT" >> $GITHUB_ENV
-          mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}}_NEXT"
+          echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}_NEXT" >> $GITHUB_ENV
+          mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}_NEXT"
           echo "✅ 缓存目录已设置: $HOME/.ccache_${{ github.event.inputs.FEIL }}_NEXT" 
 
       - name: "🔐 Configure Git | 配置Git账户"
