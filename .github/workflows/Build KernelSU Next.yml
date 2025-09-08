@@ -134,9 +134,9 @@ jobs:
       - name: "⚙️ Setup Cache Env | 设置缓存环境"
         run: |
           echo "🔧 正在设置机型隔离缓存目录..."
-          echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}_NEXT" >> $GITHUB_ENV
-          mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}_NEXT"
-          echo "✅ 缓存目录已设置: $HOME/.ccache_${{ github.event.inputs.FEIL }}_NEXT" 
+          echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}_Next" >> $GITHUB_ENV
+          mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}_Next"
+          echo "✅ 缓存目录已设置: $HOME/.ccache_${{ github.event.inputs.FEIL }}_Next" 
 
       - name: "🔐 Configure Git | 配置Git账户"
         run: |
@@ -188,10 +188,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}-NEXT
+          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}-Next
           restore-keys: |
-            ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-NEXT
-            ccache-${{ runner.os }}-NEXT
+            ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-Next
+            ccache-${{ runner.os }}-Next
 
       - name: "⚙️ Initialize ccache | 初始化ccache"
         run: |

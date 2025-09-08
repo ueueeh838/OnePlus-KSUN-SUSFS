@@ -1,4 +1,4 @@
-name: Build OnePlus Kernel(纯内核，无Root管理器)
+name: Build OnePlus Kernel Only
 on:
   workflow_dispatch:
     inputs:
@@ -133,9 +133,9 @@ jobs:
       - name: "⚙️ Setup Cache Env | 设置缓存环境"
         run: |
           echo "🔧 正在设置机型隔离缓存目录..."
-          echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}_kernel" >> $GITHUB_ENV
-          mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}_kernel"
-          echo "✅ 缓存目录已设置: $HOME/.ccache_${{ github.event.inputs.FEIL }}_kernel"
+          echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}_Kernel" >> $GITHUB_ENV
+          mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}_Kernel"
+          echo "✅ 缓存目录已设置: $HOME/.ccache_${{ github.event.inputs.FEIL }}_Kernel"
 
       - name: "🔐 Configure Git | 配置Git账户"
         run: |
@@ -187,10 +187,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}-kernel
+          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}-Kernel
           restore-keys: |
-            ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-kernel
-            ccache-${{ runner.os }}-kernel
+            ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-Kernel
+            ccache-${{ runner.os }}-Kernel
 
       - name: "⚙️ Initialize ccache | 初始化ccache"
         run: |
