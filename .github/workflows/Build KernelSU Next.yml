@@ -130,7 +130,14 @@ jobs:
           remove-android: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
-          
+
+      - name: "⚙️ Setup Cache Env | 设置缓存环境"
+        run: |
+          echo "🔧 正在设置机型隔离缓存目录..."
+          echo "CCACHE_DIR=$HOME/.ccache_${{ github.event.inputs.FEIL }}}_NEXT" >> $GITHUB_ENV
+          mkdir -p "$HOME/.ccache_${{ github.event.inputs.FEIL }}}_NEXT"
+          echo "✅ 缓存目录已设置: $HOME/.ccache_${{ github.event.inputs.FEIL }}_NEXT" 
+
       - name: "🔐 Configure Git | 配置Git账户"
         run: |
           echo "🔧 正在配置Git用户信息..."
@@ -157,7 +164,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.HOME }}/apt-cache
-          key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/Build SukiSU Ultra.yml') }}
+          key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/Build KernelSU Next.yml') }}
           restore-keys: |
             ${{ runner.os }}-apt-
 
@@ -180,10 +187,32 @@ jobs:
       - name: "💾 Restore ccache | 恢复ccache缓存"
         uses: actions/cache@v3
         with:
-          path: /home/runner/.ccache
-          key: ccache-${{ runner.os }}-${{ github.ref }}
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.ref }}-${{ github.event.inputs.FEIL }}-NEXT
           restore-keys: |
-            ccache-${{ runner.os }}-
+            ccache-${{ runner.os }}-${{ github.event.inputs.FEIL }}-NEXT
+            ccache-${{ runner.os }}-NEXT
+
+      - name: "⚙️ Initialize ccache | 初始化ccache"
+        run: |
+          echo "🔧 正在初始化ccache..."
+          INIT_FLAG="${{ env.CCACHE_DIR }}/.ccache_initialized"
+          
+          if command -v ccache >/dev/null 2>&1; then
+            if [ ! -f "$INIT_FLAG" ]; then
+              mkdir -p "${{ env.CCACHE_DIR }}"
+              ccache -M ${{ env.CCACHE_MAXSIZE }}
+              touch "$INIT_FLAG"
+              echo "🆕 ccache初始化完成"
+            else
+              echo "ℹ️ ccache已存在，跳过初始化"
+            fi
+          else
+            echo "⚠️ 未找到ccache命令，跳过初始化"
+          fi
+          # 显示缓存统计
+          ccache -s
+          echo "✅ ccache初始化流程完成"
 
       # ====================== 源码准备阶段 ======================
       - name: "📥 Install Repo Tool | 安装Repo工具"
