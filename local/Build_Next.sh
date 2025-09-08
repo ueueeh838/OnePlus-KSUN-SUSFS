@@ -4,9 +4,9 @@ set -e
 
 # --- Build Configuration ---
 clear
-echo "==================================================="
-echo "  SukiSU Ultra OnePlus Kernel Build Configuration  "
-echo "==================================================="
+echo "===================================================="
+echo "  KernelSU Next OnePlus Kernel Build Configuration  "
+echo "===================================================="
 echo "Press Enter to accept the default value in [brackets]."
 echo ""
 
@@ -26,7 +26,6 @@ FEIL=$(ask "Enter phone model (e.g., oneplus_12, oneplus_11)" "oneplus_12")
 CPUD=$(ask "Enter processor codename (e.g., pineapple, kalama, waipio)" "pineapple")
 ANDROID_VERSION=$(ask "Enter kernel Android version (android14, android13, android12)" "android14")
 KERNEL_VERSION=$(ask "Enter kernel version (6.1, 5.15, 5.10)" "6.1")
-KPM=$(ask "Enable KPM (Kernel Patch Manager)? (On/Off)" "Off")
 lz4kd=$(ask "Enable lz4kd? (6.1 uses lz4 + zstd if Off) (On/Off)" "Off")
 bbr=$(ask "Enable BBR congestion control algorithm? (On/Off)" "Off")
 proxy=$(ask "Add proxy performance optimization? (if oneplus_ace5_race must be off!!!!) (On/Off)" "On")
@@ -41,7 +40,6 @@ echo "Phone Model        : $FEIL"
 echo "CPU                : $CPU"
 echo "Android Version    : $ANDROID_VERSION"
 echo "Kernel Version     : $KERNEL_VERSION"
-echo "KPM Enabled        : $KPM"
 echo "lz4kd Enabled      : $lz4kd"
 echo "BBR Enabled        : $bbr"
 echo "Proxy Opts Enabled : $proxy"
@@ -70,7 +68,7 @@ echo "✅ All dependencies installed successfully."
 # Set up and improve ccache
 # Generous size for local builds
 echo "⚙️ Setting up ccache..."
-export CCACHE_DIR="$HOME/.ccache_${FEIL}"
+export CCACHE_DIR="$HOME/.ccache_${FEIL}_Next"
 export CCACHE_COMPILERCHECK="%compiler% -dumpmachine; %compiler% -dumpversion"
 export CCACHE_NOHASHDIR="true"
 export CCACHE_HARDLINK="true"
@@ -135,53 +133,18 @@ cd ..
 # --- Kernel Customization ---
 cd kernel_workspace
 
-# Setup SukiSU Ultra
-echo "⚡ Setting up SukiSU Ultra..."
+# Setup KernelSU Next
+echo "⚡ Setting up KernelSU Next..."
 cd kernel_platform
-curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/setup.sh" | bash -s susfs-main
+curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs
 
 # Get KSU Version info
-cd KernelSU
-KSU_VERSION_COUNT=$(git rev-list --count main)
-export KSUVER=$(expr $KSU_VERSION_COUNT + 10700)
+cd KernelSU-Next
+KSU_VERSION=$(expr $(curl -sI "https://api.github.com/repos/KernelSU-Next/KernelSU-Next/commits?sha=next&per_page=1" | grep -i "link:" | sed -n 's/.*page=\([0-9]*\)>; rel="last".*/\1/p') "+" 10200)
+export KSUVER=$(expr $KSU_VERSION)
+sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
 
-for i in {1..3}; do
-  KSU_API_VERSION=$(curl -fsSL "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/Makefile" | \
-    grep -m1 "KSU_VERSION_API :=" | cut -d'=' -f2 | tr -d '[:space:]')
-  [ -n "$KSU_API_VERSION" ] && break || sleep 2
-done
-
-if [ -z "$KSU_API_VERSION" ]; then
-  echo "Error:KSU_API_VERSION Not Found" >&2
-  exit 1
-fi
-
-KSU_COMMIT_HASH=$(git ls-remote https://github.com/SukiSU-Ultra/SukiSU-Ultra.git refs/heads/susfs-main | cut -f1 | cut -c1-8)
-KSU_VERSION_FULL="v${KSU_API_VERSION}-${KSU_COMMIT_HASH}-xiaoxiaow"
-
-# 删除旧定义
-sed -i '/define get_ksu_version_full/,/endef/d' kernel/Makefile
-sed -i '/KSU_VERSION_API :=/d' kernel/Makefile
-sed -i '/KSU_VERSION_FULL :=/d' kernel/Makefile
-
-# 插入新定义在 REPO_OWNER := 之后
-TMP_FILE=$(mktemp)
-while IFS= read -r line; do
-  echo "$line" >> "$TMP_FILE"
-  if echo "$line" | grep -q 'REPO_OWNER :='; then
-    cat >> "$TMP_FILE" <<EOF
-define get_ksu_version_full
-v\\\$\$1-${KSU_COMMIT_HASH}-xiaoxiaow
-endef
-
-KSU_VERSION_API := ${KSU_API_VERSION}
-KSU_VERSION_FULL := ${KSU_VERSION_FULL}
-EOF
-  fi
-done < kernel/Makefile
-mv "$TMP_FILE" kernel/Makefile
-
-echo "✅ SukiSU Ultra configured."
+echo "✅ KernelSU Next configured."
 cd ../..
 # Back to $WORKSPACE/kernel_workspace
 
@@ -194,7 +157,7 @@ git clone https://github.com/ShirkNeko/SukiSU_patch.git
 cd kernel_platform
 echo "📝 Copying patch files..."
 cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${ANDROID_VERSION}-${KERNEL_VERSION}.patch ./common/
-cp ../kernel_patches/sukisu/scope_min_manual_hooks_v1.4.patch ./common/
+cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./common/
 cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
 cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 
@@ -218,7 +181,7 @@ cd ./common
 patch -p1 < 50_add_susfs_in_gki-${ANDROID_VERSION}-${KERNEL_VERSION}.patch || true
 cp ../../kernel_patches/69_hide_stuff.patch ./
 patch -p1 -F 3 < 69_hide_stuff.patch || true
-patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch || true
+patch -p1 --fuzz=3 < scope_min_manual_hooks_v1.4.patch
 
 if [ "$lz4kd" = "Off" ] && [ "$KERNEL_VERSION" = "6.1" ]; then
   echo "📦 Applying lz4+zstd patches..."
@@ -243,9 +206,9 @@ DEFCONFIG_PATH="$WORKSPACE/kernel_workspace/kernel_platform/common/arch/arm64/co
 
 cat <<EOT >> "$DEFCONFIG_PATH"
 
-#--- SukiSU Ultra & SUSFS Custom Configs ---
+#--- KernelSU Next & SUSFS Custom Configs ---
 CONFIG_KSU=y
-CONFIG_KSU_MANUAL_HOOK=y
+CONFIG_KSU_KPROBES_HOOK=n
 CONFIG_KSU_SUSFS=y
 CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y
 CONFIG_KSU_SUSFS_SUS_PATH=y
@@ -263,8 +226,6 @@ CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
 CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
 CONFIG_KSU_SUSFS_SUS_SU=n
 EOT
-
-if [ "$KPM" = "On" ]; then echo "CONFIG_KPM=y" >> "$DEFCONFIG_PATH"; fi
 
 if [ "$bbr" = "On" ]; then
   echo "🌐 Enabling BBR..."
@@ -369,27 +330,14 @@ if [ -z "$IMAGE_PATH" ]; then echo "❌ FATAL: Kernel Image not found after buil
 echo "✅ Kernel Image found at: $IMAGE_PATH"
 cp "$IMAGE_PATH" ./AnyKernel3/Image
 
-# Patch Kernel Image if KPM is enabled
-if [ "$KPM" = 'On' ]; then
-    echo "🧩 Applying KPM patch to kernel Image..."
-    mkdir -p kpm_patch_temp && cd kpm_patch_temp
-    curl -LO https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
-    chmod +x patch_linux
-    cp "$WORKSPACE/AnyKernel3/Image" ./Image
-    ./patch_linux
-    mv oImage "$WORKSPACE/AnyKernel3/Image"
-    cd .. && rm -rf kpm_patch_temp
-    echo "✅ KPM patch applied."
-fi
-
 # --- Finalize and Upload ---
 
 if [ "$lz4kd" = "On" ]; then
-  ARTIFACT_NAME="${FEIL}_SukiSU_Ultra_lz4kd_${KSUVER}"
+  ARTIFACT_NAME="${FEIL}_KernelSU_Next_lz4kd_${KSUVER}"
 elif [ "$KERNEL_VERSION" = "6.1" ]; then
-  ARTIFACT_NAME="${FEIL}_SukiSU_Ultra_lz4_zstd_${KSUVER}"
+  ARTIFACT_NAME="${FEIL}_KernelSU_Next_lz4_zstd_${KSUVER}"
 else
-  ARTIFACT_NAME="${FEIL}_SukiSU_Ultra_${KSUVER}"
+  ARTIFACT_NAME="${FEIL}_KernelSU_Next_${KSUVER}"
 fi
 FINAL_ZIP_NAME="${ARTIFACT_NAME}.zip"
 

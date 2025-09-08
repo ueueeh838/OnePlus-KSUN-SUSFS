@@ -5,7 +5,7 @@ set -e
 # --- Build Configuration ---
 clear
 echo "================================================="
-echo "  KernelSU Next OnePlus Kernel Build Configuration  "
+echo "     OnePlus Kernel Build Configuration          "
 echo "================================================="
 echo "Press Enter to accept the default value in [brackets]."
 echo ""
@@ -68,7 +68,7 @@ echo "✅ All dependencies installed successfully."
 # Set up and improve ccache
 # Generous size for local builds
 echo "⚙️ Setting up ccache..."
-export CCACHE_DIR="$HOME/.ccache_${FEIL}_NEXT"
+export CCACHE_DIR="$HOME/.ccache_${FEIL}_Kernel"
 export CCACHE_COMPILERCHECK="%compiler% -dumpmachine; %compiler% -dumpversion"
 export CCACHE_NOHASHDIR="true"
 export CCACHE_HARDLINK="true"
@@ -133,33 +133,13 @@ cd ..
 # --- Kernel Customization ---
 cd kernel_workspace
 
-# Setup KernelSU Next
-echo "⚡ Setting up KernelSU Next..."
-cd kernel_platform
-curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs
-
-# Get KSU Version info
-cd KernelSU-Next
-KSU_VERSION=$(expr $(curl -sI "https://api.github.com/repos/KernelSU-Next/KernelSU-Next/commits?sha=next&per_page=1" | grep -i "link:" | sed -n 's/.*page=\([0-9]*\)>; rel="last".*/\1/p') "+" 10200)
-export KSUVER=$(expr $KSU_VERSION)
-sed -i "s/DKSU_VERSION=11998/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
-
-echo "✅ KernelSU Next configured."
-cd ../..
-# Back to $WORKSPACE/kernel_workspace
-
-# Set up SUSFS and other patches
+# Set up Zram and other patches
 echo "🔧 Setting up SUSFS and applying patches..."
-git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${ANDROID_VERSION}-${KERNEL_VERSION}
 git clone https://github.com/Xiaomichael/kernel_patches.git
 git clone https://github.com/ShirkNeko/SukiSU_patch.git
 
 cd kernel_platform
 echo "📝 Copying patch files..."
-cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${ANDROID_VERSION}-${KERNEL_VERSION}.patch ./common/
-cp ../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./common/
-cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
-cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 
 if [ "$lz4kd" = "Off" ] && [ "$KERNEL_VERSION" = "6.1" ]; then
   echo "📦 Copying lz4+zstd patches..."
@@ -178,10 +158,6 @@ fi
 
 echo "🔧 Applying patches..."
 cd ./common
-patch -p1 < 50_add_susfs_in_gki-${ANDROID_VERSION}-${KERNEL_VERSION}.patch || true
-cp ../../kernel_patches/69_hide_stuff.patch ./
-patch -p1 -F 3 < 69_hide_stuff.patch || true
-patch -p1 --fuzz=3 < scope_min_manual_hooks_v1.4.patch
 
 if [ "$lz4kd" = "Off" ] && [ "$KERNEL_VERSION" = "6.1" ]; then
   echo "📦 Applying lz4+zstd patches..."
@@ -204,28 +180,7 @@ cd ../..
 echo "⚙️ Configuring kernel build options (defconfig)..."
 DEFCONFIG_PATH="$WORKSPACE/kernel_workspace/kernel_platform/common/arch/arm64/configs/gki_defconfig"
 
-cat <<EOT >> "$DEFCONFIG_PATH"
-
-#--- KernelSU Next & SUSFS Custom Configs ---
-CONFIG_KSU=y
-CONFIG_KSU_KPROBES_HOOK=n
-CONFIG_KSU_SUSFS=y
-CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y
-CONFIG_KSU_SUSFS_SUS_PATH=y
-CONFIG_KSU_SUSFS_SUS_MOUNT=y
-CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y
-CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y
-CONFIG_KSU_SUSFS_SUS_KSTAT=y
-CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n
-CONFIG_KSU_SUSFS_TRY_UMOUNT=y
-CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y
-CONFIG_KSU_SUSFS_SPOOF_UNAME=y
-CONFIG_KSU_SUSFS_ENABLE_LOG=y
-CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y
-CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
-CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
-CONFIG_KSU_SUSFS_SUS_SU=n
-EOT
+if [ "$KPM" = "On" ]; then echo "CONFIG_KPM=y" >> "$DEFCONFIG_PATH"; fi
 
 if [ "$bbr" = "On" ]; then
   echo "🌐 Enabling BBR..."
@@ -331,15 +286,7 @@ echo "✅ Kernel Image found at: $IMAGE_PATH"
 cp "$IMAGE_PATH" ./AnyKernel3/Image
 
 # --- Finalize and Upload ---
-
-if [ "$lz4kd" = "On" ]; then
-  ARTIFACT_NAME="${FEIL}_KernelSU_Next_lz4kd_${KSUVER}"
-elif [ "$KERNEL_VERSION" = "6.1" ]; then
-  ARTIFACT_NAME="${FEIL}_KernelSU_Next_lz4_zstd_${KSUVER}"
-else
-  ARTIFACT_NAME="${FEIL}_KernelSU_Next_${KSUVER}"
-fi
-FINAL_ZIP_NAME="${ARTIFACT_NAME}.zip"
+FINAL_ZIP_NAME="AnyKernel3_${FEIL}_Kernel_Only.zip"
 
 echo "📦 Creating final zip file: ${FINAL_ZIP_NAME}..."
 cd AnyKernel3 && zip -q -r9 "../${FINAL_ZIP_NAME}" ./* && cd ..
