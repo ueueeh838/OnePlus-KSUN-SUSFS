@@ -11,6 +11,7 @@ on:
         options:
           - Build OnePlus SukiSU Ultra
           - Build OnePlus KernelSU Next
+          - Build OnePlus Kernel Only
       count:
         description: '最多清理的运行次数'
         required: false
