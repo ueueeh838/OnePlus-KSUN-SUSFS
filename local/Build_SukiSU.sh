@@ -29,7 +29,7 @@ KERNEL_VERSION=$(ask "Enter kernel version (6.1, 5.15, 5.10)" "6.1")
 KPM=$(ask "Enable KPM (Kernel Patch Manager)? (On/Off)" "Off")
 lz4kd=$(ask "Enable lz4kd? (6.1 uses lz4 + zstd if Off) (On/Off)" "Off")
 bbr=$(ask "Enable BBR congestion control algorithm? (On/Off)" "Off")
-proxy=$(ask "Add proxy performance optimization? (if oneplus_ace5_race must be off!!!!) (On/Off)" "On")
+proxy=$(ask "Add proxy performance optimization? (if MTK_CPU must be Off!)  (On/Off)" "On")
 
 # --- Display Configuration Summary ---
 clear
