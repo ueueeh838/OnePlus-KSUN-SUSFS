@@ -414,7 +414,13 @@ jobs:
       - name: "🧠 Set Artifact Name | 设置产物名称"
         id: set_name
         run: |
-          echo "ARTIFACT_NAME=AnyKernel3_${{ github.event.inputs.FEIL }}_Kernel_Only" >> $GITHUB_OUTPUT
+          if [ "${{ github.event.inputs.lz4kd }}" = "On" ]; then
+            echo "ARTIFACT_NAME=Ak3_${{ github.event.inputs.FEIL }}_lz4kd_${{ env.KSUVER }}_Only" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.KERNEL_VERSION }}" = "6.1" ]; then
+            echo "ARTIFACT_NAME=Ak3_${{ github.event.inputs.FEIL }}_lz4_zstd_${{ env.KSUVER }}_Only" >> $GITHUB_OUTPUT
+          else
+            echo "ARTIFACT_NAME=Ak3_${{ github.event.inputs.FEIL }}_${{ env.KSUVER }}_Only" >> $GITHUB_OUTPUT
+          fi
 
       - name: "📤 Upload AnyKernel3 | 上传 AnyKernel3"
         uses: actions/upload-artifact@v4
