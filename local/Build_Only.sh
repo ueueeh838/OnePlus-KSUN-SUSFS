@@ -286,7 +286,14 @@ echo "✅ Kernel Image found at: $IMAGE_PATH"
 cp "$IMAGE_PATH" ./AnyKernel3/Image
 
 # --- Finalize and Upload ---
-FINAL_ZIP_NAME="AnyKernel3_${FEIL}_Kernel_Only.zip"
+if [ "$lz4kd" = "On" ]; then
+  ARTIFACT_NAME="Anykernel3_${FEIL}_lz4kd}_Kernel_Only"
+elif [ "$KERNEL_VERSION" = "6.1" ]; then
+  ARTIFACT_NAME="Anykernel3_${FEIL}_lz4_zstd}_Kernel_Only"
+else
+  ARTIFACT_NAME="Anykernel3_${FEIL}_Kernel_Only"
+fi
+FINAL_ZIP_NAME="${ARTIFACT_NAME}.zip"
 
 echo "📦 Creating final zip file: ${FINAL_ZIP_NAME}..."
 cd AnyKernel3 && zip -q -r9 "../${FINAL_ZIP_NAME}" ./* && cd ..
