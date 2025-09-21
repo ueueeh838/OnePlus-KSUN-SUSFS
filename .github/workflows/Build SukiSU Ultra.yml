@@ -254,7 +254,15 @@ jobs:
           sed -i '$s|echo "\$res"|echo "-${{ github.event.inputs.ANDROID_VERSION }}-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
 
           echo "✅ 内核配置完成"
-         
+
+      - name: "⚡ Setup Baseband-guard | 配置 Baseband-guard"
+        if: ${{ github.event.inputs.bbg == 'On' }}
+        run: |
+          set -e
+          cd kernel_workspace/kernel_platform/common
+          curl -sSL https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh -o setup.sh
+          bash setup.sh     
+              
       # ====================== 内核定制阶段 ======================
       - name: "⚡ Setup SukiSU Ultra | 配置SukiSU Ultra"
         run: |
@@ -369,6 +377,12 @@ jobs:
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
+
+          if [ "${{ github.event.inputs.bbg }}" == "On" ]; then
+            echo "⚡ 启用BBG防格机..."
+            echo 'CONFIG_BBG=y' >> ./common/arch/arm64/configs/gki_defconfig
+            echo 'CONFIG_LSM="landlock,lockdown,yama,loadpin,safesetid,selinux,smack,tomoyo,apparmor,bpf,baseband_guard"' >> ./common/arch/arm64/configs/gki_defconfig
+          fi          
           
           if [ "${{ github.event.inputs.bbr }}" == "On" ]; then
             echo "🌐 启用BBR网络算法..."
