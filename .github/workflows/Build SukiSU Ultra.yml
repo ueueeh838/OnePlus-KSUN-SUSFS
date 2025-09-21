@@ -107,6 +107,15 @@ on:
           - 'Off'
        default: 'Off'
 
+      bbg:
+        description: "是否添加BBG防格机模块"
+        required: true
+        type: choice
+        options:
+           - 'On'
+           - 'Off'
+        default: 'On'
+        
       proxy:
        description: "是否添加代理性能优化(MTK系列跑的时候请关闭否则出现恶性bug)"
        required: true

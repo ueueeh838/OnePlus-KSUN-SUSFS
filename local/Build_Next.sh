@@ -28,6 +28,7 @@ ANDROID_VERSION=$(ask "Enter kernel Android version (android14, android13, andro
 KERNEL_VERSION=$(ask "Enter kernel version (6.1, 5.15, 5.10)" "6.1")
 lz4kd=$(ask "Enable lz4kd? (6.1 uses lz4 + zstd if Off) (On/Off)" "Off")
 bbr=$(ask "Enable BBR congestion control algorithm? (On/Off)" "Off")
+bbg=$(ask "Enable Baseband-guard? (On/Off)" "On")
 proxy=$(ask "Add proxy performance optimization? (if MTK_CPU must be Off!) (On/Off)" "On")
 
 # --- Display Configuration Summary ---
@@ -42,6 +43,7 @@ echo "Android Version    : $ANDROID_VERSION"
 echo "Kernel Version     : $KERNEL_VERSION"
 echo "lz4kd Enabled      : $lz4kd"
 echo "BBR Enabled        : $bbr"
+echo "BBG Enabled        : $bbg"
 echo "Proxy Opts Enabled : $proxy"
 echo "================================================="
 read -p "Press Enter to begin the build process..."
@@ -127,6 +129,15 @@ sed -i '$s|echo "\$res"|echo "-$adv-oki-xiaoxiaow"|' kernel_platform/common/scri
 sed -i '$s|echo "\$res"|echo "-$adv-oki-xiaoxiaow"|' kernel_platform/msm-kernel/scripts/setlocalversion
 sed -i '$s|echo "\$res"|echo "-$adv-oki-xiaoxiaow"|' kernel_platform/external/dtc/scripts/setlocalversion
 echo "✅ Kernel source cloned and configured."
+cd ..
+# Back to $WORKSPACE
+
+if [ "$bbg" = "On" ]; then
+    set -e
+    cd kernel_workspace/kernel_platform/common
+    curl -sSL https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh -o setup.sh
+    bash setup.sh
+fi
 cd ..
 # Back to $WORKSPACE
 
@@ -226,6 +237,14 @@ CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
 CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
 CONFIG_KSU_SUSFS_SUS_SU=n
 EOT
+
+if [ "$bbg" == "On" ]; then
+  echo "📦 Enabling BBG..."
+  cat <<EOT >> "$DEFCONFIG_PATH"
+CONFIG_BBG=y
+CONFIG_LSM="landlock,lockdown,yama,loadpin,safesetid,selinux,smack,tomoyo,apparmor,bpf,baseband_guard"
+EOT
+fi
 
 if [ "$bbr" = "On" ]; then
   echo "🌐 Enabling BBR..."
