@@ -29,7 +29,7 @@
 1. 点击 `Branches` 切换处理器分支
 2. 选择适合您设备的配置
 
-<img width="410" height="643" alt="{2737F086-DBF5-4F52-B98E-2475D8CD4A42}" src="https://github.com/user-attachments/assets/483a4abd-1c09-4421-aa31-a4f97cb1311f" />
+<img width="318.8" height="500" alt="{2737F086-DBF5-4F52-B98E-2475D8CD4A42}" src="https://github.com/user-attachments/assets/483a4abd-1c09-4421-aa31-a4f97cb1311f" />
 
 ### 如何查看处理器代号
 
