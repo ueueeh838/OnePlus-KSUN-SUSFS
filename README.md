@@ -2,7 +2,7 @@
 
 如果您觉得这个项目对您有帮助，请给我们一个 star / 进行赞助！您的支持是我们持续改进的动力
 
-<img width="1382" height="1382" alt="image" src="https://github.com/user-attachments/assets/55acad97-8fe6-4de7-b9ce-90da9552a212" />
+<img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/55acad97-8fe6-4de7-b9ce-90da9552a212" />
 
 ## OnePlus Kernel 开源地址
 
