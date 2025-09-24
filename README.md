@@ -47,4 +47,4 @@
 
 ## 运行时配置示例
 
-<img width="75.4" height="167.4" alt="{1D096FF8-ADC8-44FB-ABB0-B90E6BFD997D}" src="https://github.com/user-attachments/assets/2868dd1b-cb38-48fc-8041-490c5e700baf" />
+<img width="188.5" height="418.5" alt="{1D096FF8-ADC8-44FB-ABB0-B90E6BFD997D}" src="https://github.com/user-attachments/assets/2868dd1b-cb38-48fc-8041-490c5e700baf" />
